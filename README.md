@@ -1,16 +1,34 @@
-# React + Vite
+# Resume Auto-Updater
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An app that connects to your GitHub, picks your most impressive projects, and automatically rewrites the "Projects" section of your resume with AI-written bullet points — while checking how likely your resume is to pass automatic ATS screening. It also runs fully automatically: every time you push new code to GitHub, your resume quietly updates itself.
 
-Currently, two official plugins are available:
+## Team
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Role | Name |
+|---|---|
+| Frontend Lead | A |
+| Frontend Support, QA & Demo | B |
+| Backend Lead & Deployment | C |
+| AI & Resume Logic | D |
+| Database, Automation & Coordinator | E (Eshaal) |
 
-## React Compiler
+## Repo Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `/frontend` — React (Vite + Tailwind) app: login, signup, dashboard, GitHub connect, resume upload/update UI.
+- `/backend` — FastAPI server: auth, GitHub OAuth, resume generation pipeline, database connection.
+- `/n8n` — n8n automation workflow: listens for GitHub push webhooks and triggers the backend's `/regenerate-resume` endpoint automatically.
+- `/docs` — Project documentation: architecture notes, schema/ER diagrams, and workflow exports.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Frontend
+```bash
+cd frontend
+# setup instructions to be added by A
+```
+
+### Backend
+```bash
+cd backend
+# setup instructions to be added by C
+```
