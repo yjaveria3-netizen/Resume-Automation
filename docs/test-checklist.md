@@ -2,11 +2,12 @@
 
 ## 1. Project Design Tokens & Conventions
 
-### Color Palette & Theme Decisions (Agreed with Person A)
-* **Primary (CTAs / Buttons):** Defined by Person A in `tailwind.config.js` (`primary-500` / core brand color).
-* **Hover Effect:** Applied across primary controls (`hover:bg-primary-600` / transition effects).
-* **Secondary / Neutral:** Dark slate headers (`secondary-900`) with off-white backgrounds (`neutral-50`).
-* **Accent (ATS Highlight):** Emerald green (`accent-500`) for score badges and success states.
+### Color Palette & Theme Decisions (Synced with `tailwind.config.js`)
+* **Background Fill:** `khaki.light` (`#F5F2EB`) — Used for full-page backgrounds and light canvas areas.
+* **Warm Neutral / Cards:** `khaki` (`#C3B091`) — Used for card borders, subtle accents, and container dividers.
+* **Dark Structural Elements:** `olive-wood` (`#2C302E`) — Used for dark navigation bars, section headings, and primary body text.
+* **Primary Interactive Control:** `sage` (`#8A9A86`) — Used for CTAs (e.g., "Update Resume", "Connect GitHub") and success state badges.
+* **Button Hover State:** `sage.hover` (`#73836F`) — Applied to primary buttons for active focus and hover transitions.
 
 ### Component Folder Convention
 To maintain project structure across team members, all front-end code follows this layout:
