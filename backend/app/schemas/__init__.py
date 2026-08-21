@@ -1,3 +1,14 @@
 from app.schemas.auth import SignupRequest, LoginRequest, UserOut, AuthResponse
+from app.schemas.github import GitHubLoginResponse, GitHubAccountOut, GitHubCallbackResponse
+from app.schemas.project import ProjectResponse
 
-__all__ = ["SignupRequest", "LoginRequest", "UserOut", "AuthResponse"]
+__all__ = [
+    "SignupRequest",
+    "LoginRequest",
+    "UserOut",
+    "AuthResponse",
+    "GitHubLoginResponse",
+    "GitHubAccountOut",
+    "GitHubCallbackResponse",
+    "ProjectResponse",
+]

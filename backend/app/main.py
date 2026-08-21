@@ -3,8 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.routers.auth import router as auth_router
+from app.routers.github_auth import router as github_auth_router
+from app.routers.projects import router as projects_router
 
-# Auto-create tables on launch (users table)
+# Auto-create tables on launch (users, github_accounts, and projects tables)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -25,6 +27,8 @@ if settings.FRONTEND_URL:
 
 # Register routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(github_auth_router, prefix="/auth/github", tags=["github_auth"])
+app.include_router(projects_router, prefix="/projects", tags=["projects"])
 
 
 @app.get("/health")

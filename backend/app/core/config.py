@@ -22,6 +22,10 @@ class Settings:
     GITHUB_CLIENT_ID: str = os.getenv("GITHUB_CLIENT_ID", "")
     GITHUB_CLIENT_SECRET: str = os.getenv("GITHUB_CLIENT_SECRET", "")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "")
+    GITHUB_REDIRECT_URI: str = os.getenv(
+        "GITHUB_REDIRECT_URI", "http://127.0.0.1:8000/auth/github/callback"
+    )
 
 
 settings = Settings()
