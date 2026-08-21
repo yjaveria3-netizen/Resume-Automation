@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.dependencies import get_current_user
+from app.models.user import User
 from app.models.github_account import GitHubAccount
 from app.services.crypto import encrypt_token
 from app.schemas.github import GitHubLoginResponse, GitHubCallbackResponse
@@ -164,3 +166,42 @@ async def github_callback(
         github_username=github_username,
         user_id=account.user_id,
     )
+
+
+@router.get("/status")
+def get_github_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Check if the current authenticated user has a connected GitHub account."""
+    account = db.query(GitHubAccount).filter(GitHubAccount.user_id == current_user.id).first()
+    if not account:
+        return {
+            "is_connected": False,
+            "github_username": None,
+            "avatar_url": None,
+            "connected_at": None,
+        }
+
+    return {
+        "is_connected": True,
+        "github_username": account.github_username,
+        "avatar_url": f"https://github.com/{account.github_username}.png",
+        "connected_at": account.updated_at.isoformat() if account.updated_at else None,
+    }
+
+
+@router.delete("/disconnect")
+@router.post("/disconnect")
+def disconnect_github(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Disconnect/unlink GitHub account for current user."""
+    account = db.query(GitHubAccount).filter(GitHubAccount.user_id == current_user.id).first()
+    if account:
+        db.delete(account)
+        db.commit()
+
+    return {"status": "success", "message": "GitHub account disconnected."}
+
