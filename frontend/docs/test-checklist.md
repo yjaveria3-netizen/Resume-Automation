@@ -70,3 +70,14 @@ To maintain project structure across team members, all front-end code follows th
   - [ ] Click **"Update Resume"** before connecting GitHub $\rightarrow$ Warning modal pops up requesting GitHub authorization first.
   - [ ] Disconnect internet and click **"Update Resume"** $\rightarrow$ Toast notification displays: *"Connection lost. Please check your network and try again."*
   - [ ] Trigger server API failure $\rightarrow$ Alert displays with an explicit error message and a **"Retry"** button.
+  ## Day 2 UI & Empty States Test Checklist
+
+### Dashboard Page
+- [ ] **Empty State Card**: Verify "No Resume Uploaded Yet" card displays document icon, explanatory text, and CTA button.
+- [ ] **Navigation CTA**: Verify clicking "Upload Resume Now" successfully redirects to `/upload`.
+- [ ] **GitHub Connect Button**: Verify "Connect GitHub" button renders correctly inside the GitHub Status card.
+
+### Upload Page
+- [ ] **Drag & Drop Zone**: Verify dashed drop zone displays cloud icon and supported formats note.
+- [ ] **File Preview Card**: Verify preview card displays sample file metadata (`my_resume.docx`, `1.2 MB`, `Ready to process` badge).
+- [ ] **Remove Action**: Verify trash icon button is visible and formatted properly on the file preview card.
