@@ -25,6 +25,12 @@ export default function App() {
               <Route path="/upload" element={<Upload />} />
             </Route>
 
+            {/* Public Demo/Test Routes */}
+            <Route path="/preview-test" element={<PreviewTest />} />
+            <Route path="/preview" element={<PreviewTest />} />
+            <Route path="/ats-test" element={<AtsTest />} />
+            <Route path="/ats" element={<AtsTest />} />
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>
