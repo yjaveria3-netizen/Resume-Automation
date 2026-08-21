@@ -26,6 +26,12 @@ export default function Navbar() {
           <NavLink to="/dashboard" className={navLinkClass}>
             Dashboard
           </NavLink>
+          <NavLink to="/ats-test" className={navLinkClass}>
+            ATS Score
+          </NavLink>
+          <NavLink to="/preview-test" className={navLinkClass}>
+            Preview
+          </NavLink>
           <NavLink to="/upload" className={navLinkClass}>
             Upload
           </NavLink>

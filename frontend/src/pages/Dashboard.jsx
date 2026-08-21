@@ -14,11 +14,24 @@ export default function Dashboard() {
               Overview of your automated resume updates and ATS performance score
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/preview-test"
+              className="px-4 py-2.5 rounded-xl bg-khaki-light hover:bg-khaki/30 text-olive-wood font-medium border border-khaki/50 transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4 text-olive-wood" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Preview
+            </Link>
             <Link
               to="/upload"
-              className="px-5 py-2.5 rounded-xl bg-sage text-white font-medium shadow transition-all hover:bg-sage-hover"
+              className="px-5 py-2.5 rounded-xl bg-sage text-white font-medium shadow transition-all hover:bg-sage-hover flex items-center gap-1.5"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
               Upload New Resume
             </Link>
           </div>
@@ -26,11 +39,25 @@ export default function Dashboard() {
 
         {/* Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-khaki/40 shadow-sm space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-olive-wood/60">ATS Match Score</span>
-            <div className="text-3xl font-bold text-sage">-- %</div>
-            <p className="text-xs text-olive-wood/60">Upload a resume to analyze compatibility</p>
-          </div>
+          <Link
+            to="/ats-test"
+            className="bg-white p-6 rounded-2xl border border-khaki/40 shadow-sm space-y-2 hover:border-sage/60 transition-all group cursor-pointer block"
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-semibold uppercase tracking-wider text-olive-wood/60">ATS Match Score</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                Demo Ready
+              </span>
+            </div>
+            <div className="text-3xl font-bold text-sage group-hover:text-sage-hover flex items-baseline gap-1">
+              <span>94</span>
+              <span className="text-xs font-normal text-olive-wood/50">/ 100</span>
+            </div>
+            <p className="text-xs text-olive-wood/60 flex items-center justify-between">
+              <span>Strong Match • 5 criteria passed</span>
+              <span className="text-sage font-semibold group-hover:translate-x-0.5 transition-transform">View Report &rarr;</span>
+            </p>
+          </Link>
 
           <div className="bg-white p-6 rounded-2xl border border-khaki/40 shadow-sm space-y-3 flex flex-col justify-between">
             <div className="space-y-1">

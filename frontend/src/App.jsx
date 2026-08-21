@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
+import PreviewTest from './pages/PreviewTest';
+import AtsTest from './pages/AtsTest';
 
 export default function App() {
   return (
@@ -18,6 +20,10 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/preview-test" element={<PreviewTest />} />
+            <Route path="/preview" element={<PreviewTest />} />
+            <Route path="/ats-test" element={<AtsTest />} />
+            <Route path="/ats" element={<AtsTest />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>
