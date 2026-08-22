@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ConnectGitHubCard from '../components/github/ConnectGitHubCard';
 import { getGitHubStatus, disconnectGitHub, getUser } from '../api/auth';
+// 1. Import your Day 4 ATS components and mock data
+import { AtsScoreCard, mockAtsData94 } from '../components/ats';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -145,6 +147,13 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
+            {/* Quick link to Day 4 ATS Test Harness */}
+            <Link
+              to="/ats-test"
+              className="px-4 py-2.5 rounded-xl bg-sage/10 hover:bg-sage/20 text-sage font-medium border border-sage/30 transition-all shadow-sm flex items-center gap-1.5 text-sm"
+            >
+              Day 4 ATS Test Harness
+            </Link>
             <Link
               to="/preview-test"
               className="px-4 py-2.5 rounded-xl bg-khaki-light hover:bg-khaki/30 text-olive-wood font-medium border border-khaki/50 transition-all shadow-sm flex items-center gap-1.5"
@@ -173,8 +182,8 @@ export default function Dashboard() {
             <span className="text-xs font-semibold uppercase tracking-wider text-olive-wood/60">
               ATS Match Score
             </span>
-            <div className="text-3xl font-bold text-sage">-- %</div>
-            <p className="text-xs text-olive-wood/60">Upload a resume to analyze compatibility</p>
+            <div className="text-3xl font-bold text-sage">{mockAtsData94.score}%</div>
+            <p className="text-xs text-emerald-600 font-medium">{mockAtsData94.tier}</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-khaki/40 shadow-sm space-y-2">
@@ -193,10 +202,19 @@ export default function Dashboard() {
             <span className="text-xs font-semibold uppercase tracking-wider text-olive-wood/60">
               Last Update
             </span>
-            <div className="text-lg font-semibold text-olive-wood">Never</div>
-            <p className="text-xs text-olive-wood/60">No automated update events triggered yet</p>
+            <div className="text-lg font-semibold text-olive-wood">Today</div>
+            <p className="text-xs text-olive-wood/60">ATS analysis completed</p>
           </div>
         </div>
+
+        {/* 2. RENDER THE DAY 4 ATS SCORE CARD HERE */}
+        <AtsScoreCard
+          score={mockAtsData94.score}
+          tier={mockAtsData94.tier}
+          breakdown={mockAtsData94.breakdown}
+          feedback={mockAtsData94.feedback}
+          lastAnalyzed={mockAtsData94.lastAnalyzed}
+        />
 
         {/* GitHub Integration Card Component (Day 4 Feature) */}
         <ConnectGitHubCard
@@ -208,29 +226,6 @@ export default function Dashboard() {
           onResync={loadGithubStatus}
           loading={loadingGithub}
         />
-
-        {/* Empty State Card */}
-        <div className="bg-white rounded-2xl border border-khaki/40 p-12 text-center shadow-sm">
-          <div className="max-w-md mx-auto space-y-5">
-            <div className="w-16 h-16 bg-sage/10 rounded-full flex items-center justify-center mx-auto text-sage">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-olive-wood">No Resume Uploaded Yet</h3>
-              <p className="text-olive-wood/70 text-sm mt-1">
-                Upload your master .docx resume to unlock automated GitHub syncing and ATS optimization.
-              </p>
-            </div>
-            <Link
-              to="/upload"
-              className="inline-block px-6 py-2.5 rounded-xl bg-sage text-white font-medium shadow transition-all hover:bg-sage-hover cursor-pointer"
-            >
-              Upload Resume Now
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );
