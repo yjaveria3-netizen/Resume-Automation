@@ -30,5 +30,5 @@ cd frontend
 ### Backend
 ```bash
 cd backend
-# setup instructions to be added by C
+# setup instructions to be added by person C
 ```
