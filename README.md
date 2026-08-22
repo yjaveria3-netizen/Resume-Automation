@@ -10,7 +10,7 @@ An app that connects to your GitHub, picks your most impressive projects, and au
 | Frontend Support, QA & Demo | B |
 | Backend Lead & Deployment | C |
 | AI & Resume Logic | D |
-| Database, Automation & Coordinator | E |
+| Database, Automation and Coordinator | E |
 
 ## Repo Structure
 
