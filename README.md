@@ -24,7 +24,7 @@ An app that connects to your GitHub, picks your most impressive projects, and au
 ### Frontend
 ```bash
 cd frontend
-# setup instructions to be added by A
+# setup instructions to be added by person A
 ```
 
 ### Backend
