@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -7,7 +8,10 @@ from app.routers.github_auth import router as github_auth_router
 from app.routers.projects import router as projects_router
 from app.routers.resumes import router as resumes_router
 
-# Auto-create tables on launch (users, github_accounts, and projects tables)
+# Auto-create storage directory on startup
+Path(settings.STORAGE_DIR).mkdir(parents=True, exist_ok=True)
+
+# Auto-create DB tables on startup (users, github_accounts, projects, resumes)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(

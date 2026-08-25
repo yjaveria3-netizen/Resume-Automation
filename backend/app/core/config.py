@@ -26,6 +26,7 @@ class Settings:
     GITHUB_REDIRECT_URI: str = os.getenv(
         "GITHUB_REDIRECT_URI", "http://127.0.0.1:8000/auth/github/callback"
     )
+    STORAGE_DIR: str = os.getenv("STORAGE_DIR", str(BASE_DIR / "storage" / "resumes"))
 
 
 settings = Settings()
