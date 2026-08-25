@@ -12,10 +12,9 @@ export default function Navbar() {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-      isActive
-        ? 'bg-sage text-white shadow'
-        : 'text-olive-wood hover:bg-khaki-light/60 hover:text-olive-wood'
+    `px-4 py-2 rounded-xl text-sm font-medium transition-all ${isActive
+      ? 'bg-sage text-white shadow'
+      : 'text-olive-wood hover:bg-khaki-light/60 hover:text-olive-wood'
     }`;
 
   return (

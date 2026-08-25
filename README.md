@@ -10,7 +10,7 @@ An app that connects to your GitHub, picks your most impressive projects, and au
 | Frontend Support, QA & Demo | B |
 | Backend Lead & Deployment | C |
 | AI & Resume Logic | D |
-| Database, Automation & Coordinator | E |
+| Database, Automation and Coordinator | E |
 
 ## Repo Structure
 
@@ -24,11 +24,11 @@ An app that connects to your GitHub, picks your most impressive projects, and au
 ### Frontend
 ```bash
 cd frontend
-# setup instructions to be added by A
+# setup instructions to be added by person A
 ```
 
 ### Backend
 ```bash
 cd backend
-# setup instructions to be added by C
+# setup instructions to be added by person C
 ```
