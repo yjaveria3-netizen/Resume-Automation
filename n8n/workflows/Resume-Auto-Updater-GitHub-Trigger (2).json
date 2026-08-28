@@ -145,21 +145,38 @@
       "typeVersion": 1,
       "position": [
         976,
-        96
-      ],
-      "id": "9e9e23a0-95ba-4147-b512-ccf247aa0768",
-      "name": "Error Notification"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        976,
         -96
       ],
       "id": "9ca94342-3236-4ec5-adf0-fdf2d6935e26",
       "name": "Success Logger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn [{\n  json: {\n    event: \"PIPELINE_ERROR_ALERT\",\n    status: \"ALERT_TRIGGERED\",\n    repository: $input.first().json.repo_name || \"N/A\",\n    user_id: $input.first().json.user_id || \"N/A\",\n    error_detail: $input.first().json.error?.message || \"Pipeline execution failed\",\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        96
+      ],
+      "id": "0d7e95c6-07e8-4cf4-95c0-9652e4451469",
+      "name": "Error Notification"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO automation_logs (repo_name, user_id, status, error_message)\nVALUES (\n  '{{ $json.args?.data?.repo_name || $json.repo_name || \"unknown-repo\" }}', \n  '{{ $json.args?.data?.user_id || $json.user_id || \"unknown-user\" }}', \n  'SUCCESS', \n  NULL\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "02d446ca-5243-418a-90f9-5165c3f0662d",
+      "name": "Execute a SQL query"
     }
   ],
   "pinData": {},
@@ -239,7 +256,13 @@
     },
     "Success Logger": {
       "main": [
-        []
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -249,8 +272,9 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "adf97406-2ef1-4c78-b261-1d727614447b",
+  "versionId": "f177ed88-a6e7-49a6-b735-ecaccb67cf56",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "1597dbc3c22ad8ad441026720d97a34085eb7fd36221b523ee610e9499d055f1"
   },
   "nodeGroups": [],
