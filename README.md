@@ -1,5 +1,4 @@
-# Resume Auto-Updater
-
+# Resume Auto-Update
 An app that connects to your GitHub, picks your most impressive projects, and automatically rewrites the "Projects" section of your resume with AI-written bullet points — while checking how likely your resume is to pass automatic ATS screening. It also runs fully automatically: every time you push new code to GitHub, your resume quietly updates itself.
 
 ## Team
@@ -7,8 +6,8 @@ An app that connects to your GitHub, picks your most impressive projects, and au
 | Role | Name |
 |---|---|
 | Frontend Lead | A |
-| Frontend Support, QA & Demo | B |
-| Backend Lead & Deployment | C |
+| Frontend Support, QA and Demo | B |
+| Backend Lead and Deployment | C |
 | AI & Resume Logic | D |
 | Database, Automation and Coordinator | E |
 
@@ -24,7 +23,7 @@ An app that connects to your GitHub, picks your most impressive projects, and au
 ### Frontend
 ```bash
 cd frontend
-# setup instructions to be added by person A
+# setup instructions to be  added by person A
 ```
 
 ### Backend
