@@ -35,11 +35,11 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter((User.id == user_id) | (User.id == str(user_id))).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authenticated user no longer exists",
+            detail="Authenticated user no longer exists. Please sign up or log in again.",
         )
 
     return user
