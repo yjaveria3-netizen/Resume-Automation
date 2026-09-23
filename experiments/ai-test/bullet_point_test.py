@@ -119,7 +119,7 @@ def generate_bullet_point(repo: dict) -> str:
     """Sends repository prompt to Gemini API and returns generated resume bullet point."""
     prompt = build_prompt(repo)
 
-    # 1. If live Gemini API key is configured, call Gemini API
+    # 1. If live Gemini API key is configured, call Gemini API with error & timeout safety
     if genai_client:
         for model_name in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"]:
             try:
@@ -129,7 +129,7 @@ def generate_bullet_point(repo: dict) -> str:
                 )
                 if response and response.text:
                     return response.text.strip()
-            except Exception as e:
+            except BaseException as e:
                 continue
 
     elif genai_model:
@@ -137,10 +137,10 @@ def generate_bullet_point(repo: dict) -> str:
             response = genai_model.generate_content(prompt)
             if response and response.text:
                 return response.text.strip()
-        except Exception as e:
+        except BaseException as e:
             pass
 
-    # 2. Deterministic fallback if API key is invalid or offline
+    # 2. Deterministic fallback if API key is invalid, network hangs, or SSL times out
     techs = ", ".join(repo["tech_stack"][:3])
     return f"Engineered {repo['name']} using {techs} to automate core workflows and deliver reliable technical outcomes."
 
