@@ -1,0 +1,283 @@
+{
+  "name": "Resume-Auto-Updater-GitHub-Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-push",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "999bb737-9434-4a5b-b75c-7d139e316297",
+      "name": "Webhook",
+      "webhookId": "1c3a643c-005e-4a01-903c-3db9465af3b6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst headCommit = body.head_commit || {};\n\nconst repo_name = body.repository?.name || 'unknown-repo';\nconst repo_owner = body.repository?.owner?.login || body.repository?.owner?.name || 'unknown-owner';\nconst branch_ref = body.ref ? body.ref.replace('refs/heads/', '') : 'unknown-branch';\nconst commit_message = headCommit.message || 'No commit message';\nconst commit_author = headCommit.author?.username || headCommit.author?.name || 'unknown-author';\nconst commit_timestamp = headCommit.timestamp || new Date().toISOString();\n\nconst added = headCommit.added || [];\nconst modified = headCommit.modified || [];\nconst removed = headCommit.removed || [];\nconst modified_files = [...new Set([...added, ...modified, ...removed])];\n\nreturn {\n  repo_name,\n  repo_owner,\n  branch_ref,\n  commit_message,\n  commit_author,\n  commit_timestamp,\n  modified_files\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "34b822eb-ed91-4feb-b1b7-2482c5e47285",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "25e5da63-297d-4b81-b1e4-bc2d3ea2e53c",
+              "leftValue": "={{ $json.branch_ref}}",
+              "rightValue": "main",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "e72ed286-6e0d-4690-9707-11b2382a4cc7",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst secret = 'resume001122--';\n\nconst signatureHeader = $input.first().json.headers['x-hub-signature-256'];\nconst rawBody = $input.first().json.body;\n\nif (!signatureHeader) {\n  return {\n    isValid: false,\n    error: 'Missing X-Hub-Signature-256 header'\n  };\n}\n\nconst payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);\n\nconst expectedSignature = 'sha256=' + crypto\n  .createHmac('sha256', secret)\n  .update(payloadString)\n  .digest('hex');\n\nconst receivedBuffer = Buffer.from(signatureHeader);\nconst expectedBuffer = Buffer.from(expectedSignature);\n\nlet isValid = false;\n\nif (receivedBuffer.length === expectedBuffer.length) {\n  isValid = crypto.timingSafeEqual(receivedBuffer, expectedBuffer);\n}\n\nif (!isValid) {\n  throw new Error('Invalid webhook signature — request rejected.');\n}\n\nreturn {\n  isValid: true,\n  ...$input.first().json.body\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        0
+      ],
+      "id": "93408ca0-5c38-4783-bc6c-79dc6b55a95b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.BACKEND_API_URL}}/regenerate-resume",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\": \"{{$json.user_id}}\",\n  \"repo_name\": \"{{$json.repo_name}}\",\n  \"commit_message\": \"{{$json.commit_message}}\",\n  \"trigger_source\": \"github_webhook\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        576,
+        0
+      ],
+      "id": "b276b2a4-2f7b-40a8-ad49-e413ff19b06a",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lzGQMDNDWtS02056",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9a0be9c0-47dc-4cb3-ab79-d9063f2a733e",
+              "leftValue": "={{$json.statusCode}}",
+              "rightValue": "200",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        0
+      ],
+      "id": "14dd468a-c9b8-4651-abec-b1cfb69b6014",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -96
+      ],
+      "id": "9ca94342-3236-4ec5-adf0-fdf2d6935e26",
+      "name": "Success Logger"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn [{\n  json: {\n    event: \"PIPELINE_ERROR_ALERT\",\n    status: \"ALERT_TRIGGERED\",\n    repository: $input.first().json.repo_name || \"N/A\",\n    user_id: $input.first().json.user_id || \"N/A\",\n    error_detail: $input.first().json.error?.message || \"Pipeline execution failed\",\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        96
+      ],
+      "id": "0d7e95c6-07e8-4cf4-95c0-9652e4451469",
+      "name": "Error Notification"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO automation_logs (repo_name, user_id, status, error_message)\nVALUES (\n  '{{ $json.args?.data?.repo_name || $json.repo_name || \"unknown-repo\" }}', \n  '{{ $json.args?.data?.user_id || $json.user_id || \"unknown-user\" }}', \n  'SUCCESS', \n  NULL\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "02d446ca-5243-418a-90f9-5165c3f0662d",
+      "name": "Execute a SQL query"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Success Logger",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Logger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f177ed88-a6e7-49a6-b735-ecaccb67cf56",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1597dbc3c22ad8ad441026720d97a34085eb7fd36221b523ee610e9499d055f1"
+  },
+  "nodeGroups": [],
+  "id": "kASVM0fiRDXIhQE3",
+  "tags": []
+}
