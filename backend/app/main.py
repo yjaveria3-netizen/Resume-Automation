@@ -1,6 +1,14 @@
+import sys
 from pathlib import Path
+
+# Ensure project root directory is in sys.path so 'services' and 'docx_engine' are resolvable regardless of execution CWD
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import engine, Base, get_db
@@ -11,7 +19,7 @@ from app.routers.github_auth import router as github_auth_router
 from app.routers.projects import router as projects_router
 from app.routers.resumes import router as resumes_router
 from app.schemas.pipeline import RegenerationResponse
-from services.pipeline import run_resume_regeneration_pipeline
+from app.services.pipeline import run_resume_regeneration_pipeline
 
 # Auto-create storage directory on startup
 Path(settings.STORAGE_DIR).mkdir(parents=True, exist_ok=True)
@@ -40,6 +48,12 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(github_auth_router, prefix="/auth/github", tags=["github_auth"])
 app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(resumes_router, prefix="/resumes", tags=["resumes"])
+
+
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    """Redirects root URL GET / directly to interactive Swagger API documentation."""
+    return RedirectResponse(url="/docs")
 
 
 @app.post("/regenerate-resume", response_model=RegenerationResponse, tags=["resumes"])
