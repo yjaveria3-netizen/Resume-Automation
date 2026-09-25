@@ -41,3 +41,12 @@ CREATE TABLE projects (
     rank_score INTEGER,
     fetched_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE automation_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    repo_name TEXT NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    status TEXT NOT NULL,
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
