@@ -6,6 +6,7 @@ import ResumeActionBar from '../components/preview/ResumeActionBar';
 import { AtsScoreCard, mockAtsData94 } from '../components/ats';
 import RegenerationModal from '../components/dashboard/RegenerationModal';
 import VersionHistoryList from '../components/dashboard/VersionHistoryList';
+import ResumeDiffViewer from '../components/dashboard/ResumeDiffViewer';
 import { getGitHubStatus, disconnectGitHub, getUser } from '../api/auth';
 import { getCurrentResume, regenerateResume, getResumeVersions } from '../api/resumes';
 
@@ -466,15 +467,23 @@ export default function Dashboard() {
             )}
 
             {activeTab === 'history' && (
-              <VersionHistoryList
-                versions={resumeVersions}
-                selectedVersionId={selectedVersion?.id}
-                onSelectVersion={(v) => {
-                  setSelectedVersion(v);
-                  if (v.ats_score) setAtsScore(v.ats_score);
-                  setToastMessage(`Switched active preview to Version v${v.version_number}`);
-                }}
-              />
+              <div className="space-y-6">
+                <VersionHistoryList
+                  versions={resumeVersions}
+                  selectedVersionId={selectedVersion?.id}
+                  onSelectVersion={(v) => {
+                    setSelectedVersion(v);
+                    if (v.ats_score) setAtsScore(v.ats_score);
+                    setToastMessage(`Switched active preview to Version v${v.version_number}`);
+                  }}
+                />
+                <ResumeDiffViewer
+                  scoreA={64}
+                  scoreB={atsScore || 94}
+                  versionA="Original Upload"
+                  versionB={selectedVersion ? `Version v${selectedVersion.version_number}` : 'Latest AI Version'}
+                />
+              </div>
             )}
           </div>
         </div>
