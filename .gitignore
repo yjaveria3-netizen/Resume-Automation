@@ -11,5 +11,10 @@ venv/
 # Environment
 .env
 
+# Database & Storage
+*.db
+*.db.bak
+backend/storage/
+
 # OS
 .DS_Store

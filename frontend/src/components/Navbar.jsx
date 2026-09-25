@@ -38,6 +38,20 @@ export default function Navbar() {
 
         {/* Top Navigation Bar */}
         <nav className="flex items-center space-x-2">
+          <NavLink
+            to="/demo"
+            className={({ isActive }) =>
+              `px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-sage text-white border-sage shadow-xs'
+                  : 'bg-sage/10 text-sage-hover border-sage/30 hover:bg-sage/20'
+              }`
+            }
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Demo & QA Hub</span>
+          </NavLink>
+
           {authenticated ? (
             <>
               <NavLink to="/dashboard" className={navLinkClass}>
