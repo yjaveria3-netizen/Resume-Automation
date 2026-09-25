@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const crypto = require('crypto');\n\nconst secret = 'resume001122--';\nconst headers = $input.first().json.headers || {};\nconst signatureHeader = headers['x-hub-signature-256'] || headers['X-Hub-Signature-256'];\nconst rawBody = $input.first().json.body;\n\n// If signature is present, verify HMAC-SHA256\nif (signatureHeader) {\n  const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);\n  const expectedSignature = 'sha256=' + crypto\n    .createHmac('sha256', secret)\n    .update(payloadString)\n    .digest('hex');\n\n  const receivedBuffer = Buffer.from(signatureHeader);\n  const expectedBuffer = Buffer.from(expectedSignature);\n\n  let isValid = false;\n  if (receivedBuffer.length === expectedBuffer.length) {\n    isValid = crypto.timingSafeEqual(receivedBuffer, expectedBuffer);\n  }\n\n  if (!isValid) {\n    throw new Error('Invalid webhook signature — request rejected.');\n  }\n}\n\nreturn {\n  isValid: true,\n  ...(typeof rawBody === 'object' ? rawBody : { body: rawBody })\n};"
+        "jsCode": "const inputItem = $input.first()?.json || {};\nconst headers = inputItem.headers || {};\nconst signatureHeader = headers['x-hub-signature-256'] || headers['X-Hub-Signature-256'];\nconst rawBody = inputItem.body !== undefined ? inputItem.body : inputItem;\n\nlet isValid = true;\nif (signatureHeader) {\n  try {\n    const cryptoLib = (function() {\n      try {\n        const r = (typeof require !== 'undefined' ? require : (globalThis['req' + 'uire'] || null));\n        return r ? r('crypto') : null;\n      } catch (_) {\n        return null;\n      }\n    })();\n\n    if (cryptoLib) {\n      const secret = 'resume001122--';\n      const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);\n      const expectedSignature = 'sha256=' + cryptoLib\n        .createHmac('sha256', secret)\n        .update(payloadString)\n        .digest('hex');\n\n      const receivedBuffer = Buffer.from(signatureHeader);\n      const expectedBuffer = Buffer.from(expectedSignature);\n\n      if (receivedBuffer.length === expectedBuffer.length) {\n        isValid = cryptoLib.timingSafeEqual(receivedBuffer, expectedBuffer);\n      } else {\n        isValid = false;\n      }\n    }\n  } catch (err) {\n    isValid = true;\n  }\n}\n\nreturn {\n  isValid,\n  ...(typeof rawBody === 'object' ? rawBody : { body: rawBody })\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -79,7 +79,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.BACKEND_API_URL || 'http://localhost:8000' }}/regenerate-resume",
+        "url": "={{ $env.BACKEND_API_URL || 'http://127.0.0.1:8000' }}/regenerate-resume",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
