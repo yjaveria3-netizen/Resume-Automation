@@ -261,7 +261,7 @@ export default function ResumePreview({
         <header className="border-b-2 border-sage/40 pb-5 text-center sm:text-left space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-olive-wood">
-              {resume.name}
+              {resume.name || resume.candidateName || 'Candidate Name'}
             </h1>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sage/15 text-sage border border-sage/30 self-center sm:self-auto">
               AI Optimized v2.4
@@ -269,7 +269,7 @@ export default function ResumePreview({
           </div>
 
           <p className="text-sm font-semibold text-sage-hover tracking-wide">
-            {resume.title}
+            {resume.title || resume.targetRole || resume.role || 'Software Engineer'}
           </p>
 
           {/* Contact Details */}
@@ -342,7 +342,7 @@ export default function ResumePreview({
                 <div key={idx} className="space-y-1">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs">
                     <span className="font-bold text-olive-wood">
-                      {exp.role} <span className="font-normal text-olive-wood/70">|</span> <span className="font-semibold text-sage-hover">{exp.company}</span>
+                      {exp.role || exp.title} {exp.company && <><span className="font-normal text-olive-wood/70">|</span> <span className="font-semibold text-sage-hover">{exp.company}</span></>}
                     </span>
                     <span className="text-[11px] text-olive-wood/60 font-medium">
                       {exp.period} • {exp.location}
@@ -350,7 +350,7 @@ export default function ResumePreview({
                   </div>
 
                   <ul className="list-disc list-outside pl-4 space-y-1 text-xs text-olive-wood/85 leading-relaxed marker:text-sage">
-                    {exp.highlights?.map((point, pIdx) => (
+                    {(exp.highlights || exp.bullets || []).map((point, pIdx) => (
                       <li key={pIdx}>
                         {point}
                       </li>
@@ -389,7 +389,7 @@ export default function ResumePreview({
                   </div>
 
                   <ul className="list-disc list-outside pl-4 space-y-0.5 text-xs text-olive-wood/85 leading-relaxed marker:text-sage">
-                    {proj.highlights?.map((point, pIdx) => (
+                    {(proj.highlights || proj.bullets || []).map((point, pIdx) => (
                       <li key={pIdx}>{point}</li>
                     ))}
                   </ul>
@@ -407,22 +407,22 @@ export default function ResumePreview({
             </h2>
 
             <div className="text-xs space-y-1 text-olive-wood/85">
-              {resume.skills.languages && (
+              {(resume.skills.languages || resume.skills.language) && (
                 <div>
                   <span className="font-bold text-olive-wood">Languages: </span>
-                  <span>{resume.skills.languages.join(", ")}</span>
+                  <span>{Array.isArray(resume.skills.languages || resume.skills.language) ? (resume.skills.languages || resume.skills.language).join(", ") : String(resume.skills.languages || resume.skills.language)}</span>
                 </div>
               )}
-              {resume.skills.frameworks && (
+              {(resume.skills.frameworks || resume.skills.framework) && (
                 <div>
                   <span className="font-bold text-olive-wood">Frameworks & Libraries: </span>
-                  <span>{resume.skills.frameworks.join(", ")}</span>
+                  <span>{Array.isArray(resume.skills.frameworks || resume.skills.framework) ? (resume.skills.frameworks || resume.skills.framework).join(", ") : String(resume.skills.frameworks || resume.skills.framework)}</span>
                 </div>
               )}
-              {resume.skills.tools && (
+              {(resume.skills.tools || resume.skills.developerTools || resume.skills.devTools) && (
                 <div>
                   <span className="font-bold text-olive-wood">Developer Tools & Platforms: </span>
-                  <span>{resume.skills.tools.join(", ")}</span>
+                  <span>{Array.isArray(resume.skills.tools || resume.skills.developerTools || resume.skills.devTools) ? (resume.skills.tools || resume.skills.developerTools || resume.skills.devTools).join(", ") : String(resume.skills.tools || resume.skills.developerTools || resume.skills.devTools)}</span>
                 </div>
               )}
             </div>
