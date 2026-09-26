@@ -1,0 +1,340 @@
+{
+  "name": "Resume-Auto-Updater-GitHub-Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-push",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1792,
+        16
+      ],
+      "id": "e17965dc-98ef-4ec4-8688-1516fc1027f7",
+      "name": "Webhook",
+      "webhookId": "1c3a643c-005e-4a01-903c-3db9465af3b6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = $input.first()?.json || {};\nconst headers = inputItem.headers || {};\nconst signatureHeader = headers['x-hub-signature-256'] || headers['X-Hub-Signature-256'];\nconst rawBody = inputItem.body !== undefined ? inputItem.body : inputItem;\n\nlet isValid = false;\nif (signatureHeader) {\n  try {\n    const cryptoLib = (function() {\n      try {\n        const r = (typeof require !== 'undefined' ? require : (globalThis['req' + 'uire'] || null));\n        return r ? r('crypto') : null;\n      } catch (_) {\n        return null;\n      }\n    })();\n\n    if (cryptoLib) {\n      const secret = 'resume001122--';\n      const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);\n      const expectedSignature = 'sha256=' + cryptoLib\n        .createHmac('sha256', secret)\n        .update(payloadString)\n        .digest('hex');\n\n      const receivedBuffer = Buffer.from(signatureHeader);\n      const expectedBuffer = Buffer.from(expectedSignature);\n\n      if (receivedBuffer.length === expectedBuffer.length) {\n        isValid = cryptoLib.timingSafeEqual(receivedBuffer, expectedBuffer);\n      } else {\n        isValid = false;\n      }\n    }\n  } catch (err) {\n    isValid = false;\n  }\n}\n\nif (!isValid) {\n  return [];\n}\n\nreturn [{\n  json: {\n    isValid,\n    ...(typeof rawBody === 'object' ? rawBody : { body: rawBody })\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1616,
+        16
+      ],
+      "id": "98207958-7007-4a36-aa0c-adc966af5373",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst headCommit = body.head_commit || (body.commits && body.commits[0]) || {};\n\nconst repo_name = body.repository?.name || 'resume-auto-updater';\nconst repo_owner = body.repository?.owner?.login || body.repository?.owner?.name || 'SyncBuilds';\nconst branch_ref = body.ref ? body.ref.replace('refs/heads/', '') : 'main';\nconst commit_message = headCommit.message || 'Auto-update codebase';\nconst commit_author = headCommit.author?.username || headCommit.author?.name || 'unknown-author';\nconst commit_timestamp = headCommit.timestamp || new Date().toISOString();\n\nconst added = headCommit.added || [];\nconst modified = headCommit.modified || [];\nconst removed = headCommit.removed || [];\nconst modified_files = [...new Set([...added, ...modified, ...removed])];\n\n// Map user_id for Day 6 live backend integration\nconst user_id = body.user_id || $env.DEFAULT_USER_ID || 'fa9690b9-58e0-49a8-8593-8973c72be3b4';\n\nreturn {\n  user_id,\n  repo_name,\n  repo_owner,\n  branch_ref,\n  commit_message,\n  commit_author,\n  commit_timestamp,\n  modified_files,\n  trigger_source: 'github_webhook'\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        16
+      ],
+      "id": "ff8e5321-68cd-4055-8c2a-12e723260ac7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "25e5da63-297d-4b81-b1e4-bc2d3ea2e53c",
+              "leftValue": "={{ $json.branch_ref }}",
+              "rightValue": "main",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1264,
+        16
+      ],
+      "id": "eb160bb6-b976-4ddd-9ed5-bea03ef769a0",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_API_URL || 'http://127.0.0.1:8000' }}/regenerate-resume",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Service-Secret",
+              "value": "resume001122--"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer resume001122--"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"repo_name\": \"{{ $json.repo_name }}\",\n  \"commit_message\": \"{{ $json.commit_message }}\",\n  \"trigger_source\": \"github_webhook\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1104,
+        16
+      ],
+      "id": "972914e4-aa36-440a-a070-4373eb122f0a",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 3,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9a0be9c0-47dc-4cb3-ab79-d9063f2a733e",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": "200",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "5e14d334-9276-43b9-a720-bc56e30b6231",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -928,
+        16
+      ],
+      "id": "a774207f-6385-4d0d-bf90-7c02b7d5ff38",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        -80
+      ],
+      "id": "e97b6979-d147-4d8f-b547-ee77efac9c50",
+      "name": "Success Logger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO automation_logs (repo_name, user_id, status, error_message)\nVALUES (\n  '{{ $('Code in JavaScript').item.json.repo_name }}', \n  '{{ $('Code in JavaScript').item.json.user_id }}', \n  'SUCCESS', \n  NULL\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -512,
+        -64
+      ],
+      "id": "7c7d7640-1611-4968-8122-97f5241dc2f0",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "kWiWxjR55XY1Qm1X",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first()?.json || {};\nconst commitData = $('Code in JavaScript')?.first()?.json || {};\n\nconst repo_name = input.repo_name || commitData.repo_name || 'resume-auto-updater';\nconst user_id = input.user_id || commitData.user_id || 'fa9690b9-58e0-49a8-8593-8973c72be3b4';\nconst statusCode = input.statusCode || input.error?.statusCode || 500;\nconst errorDetail = input.error?.message || input.message || input.detail || 'Pipeline execution failed';\nconst timestamp = new Date().toISOString();\n\n// Red color (#E02424 -> 14689316 decimal) for Discord rich embed\nconst embedColor = 14689316;\n\nconst payload = {\n  content: '🚨 **Resume Auto-Updater Pipeline Error**',\n  embeds: [\n    {\n      title: '■ Resume Auto-Updater Pipeline Error',\n      color: embedColor,\n      timestamp: timestamp,\n      fields: [\n        {\n          name: 'Repository',\n          value: String(repo_name),\n          inline: true\n        },\n        {\n          name: 'User ID',\n          value: String(user_id),\n          inline: true\n        },\n        {\n          name: 'HTTP Status',\n          value: String(statusCode),\n          inline: true\n        },\n        {\n          name: 'Error Detail',\n          value: String(errorDetail),\n          inline: false\n        }\n      ],\n      footer: {\n        text: 'Resume Auto-Updater • Day 6 Automation Pipeline'\n      }\n    }\n  ],\n  text: `■ Resume Auto-Updater Pipeline Error in ${repo_name}: ${errorDetail}`,\n  attachments: [\n    {\n      color: '#E02424',\n      title: '■ Resume Auto-Updater Pipeline Error',\n      fields: [\n        { title: 'Repository', value: String(repo_name), short: true },\n        { title: 'User ID', value: String(user_id), short: true },\n        { title: 'HTTP Status', value: String(statusCode), short: true },\n        { title: 'Error Detail', value: String(errorDetail), short: false }\n      ],\n      ts: Math.floor(Date.now() / 1000)\n    }\n  ]\n};\n\nreturn [{ json: payload }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        112
+      ],
+      "id": "bd496265-2fe9-4074-95ff-ad23635c5576",
+      "name": "Format Error Embed"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TEAM_WEBHOOK_URL || 'https://httpbin.org/post' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -512,
+        112
+      ],
+      "id": "6101ccc0-4328-4e87-ac29-3b0515a2f779",
+      "name": "Send Alert to Team Channel",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Success Logger",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error Embed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Logger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error Embed": {
+      "main": [
+        [
+          {
+            "node": "Send Alert to Team Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1e13a282-44d5-4c5c-af8a-fb42b52062dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1597dbc3c22ad8ad441026720d97a34085eb7fd36221b523ee610e9499d055f1"
+  },
+  "nodeGroups": [],
+  "id": "kASVM0fiRDXIhQE3",
+  "tags": []
+}
