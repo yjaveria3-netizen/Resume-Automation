@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
 import PreviewTest from './pages/PreviewTest';
 import AtsTest from './pages/AtsTest';
+import DemoShowcase from './pages/DemoShowcase';
 
 export default function App() {
   return (
@@ -25,7 +26,9 @@ export default function App() {
               <Route path="/upload" element={<Upload />} />
             </Route>
 
-            {/* Public Demo/Test Routes */}
+            {/* Public Demo, Showcase & Test Routes */}
+            <Route path="/demo" element={<DemoShowcase />} />
+            <Route path="/qa" element={<DemoShowcase />} />
             <Route path="/preview-test" element={<PreviewTest />} />
             <Route path="/preview" element={<PreviewTest />} />
             <Route path="/ats-test" element={<AtsTest />} />

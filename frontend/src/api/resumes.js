@@ -46,3 +46,44 @@ export const uploadResume = (file, onUploadProgress) => {
     xhr.send(formData);
   });
 };
+
+export const getCurrentResume = async () => {
+  const response = await fetch(`${API_BASE_URL}/resumes/current`, {
+    headers: { ...getAuthHeader() },
+  });
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Failed to fetch current resume.');
+  }
+  return await response.json();
+};
+
+export const regenerateResume = async () => {
+  const response = await fetch(`${API_BASE_URL}/resumes/regenerate`, {
+    method: 'POST',
+    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Resume regeneration failed.');
+  }
+  return await response.json();
+};
+
+export const getResumeVersions = async (resumeId) => {
+  if (!resumeId) return [];
+  const response = await fetch(`${API_BASE_URL}/resumes/${resumeId}/versions`, {
+    headers: { ...getAuthHeader() },
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Failed to fetch resume versions.');
+  }
+  return await response.json();
+};
+
+export const getDownloadUrl = (versionId) => {
+  return `${API_BASE_URL}/resumes/download/${versionId}`;
+};
+

@@ -140,17 +140,92 @@ To maintain project structure across team members, all front-end code follows th
   - [ ] Category pill tags (`Action Verbs Used`, `Quantifiable Metrics Found`, `Keyword Alignment`, `Formatting Cleanliness`) render with distinct colors.
 
 ### Master Container & Tabs (`AtsScoreCard.jsx`)
-- [ ] **Tab Switching**:
-  - [ ] Clicking **"Overview"** tab shows high-level metrics and general structure tips.
-  - [ ] Clicking **"Keyword Match"** tab filters feedback to matched/missing technical keywords.
-  - [ ] Clicking **"Bullet Improvements"** tab filters feedback to action verb and metric enhancements.
-- [ ] **Core Criteria Breakdown Bars**:
-  - [ ] Renders 4 horizontal progress bars with percentage values and target indicators.
-- [ ] **Export & Recalculate Actions**:
-  - [ ] Clicking **"Export Report"** generates and triggers download of the plain-text ATS analysis report.
-  - [ ] Clicking **"Re-calculate"** triggers loading spinner and simulated re-analysis toast.
+- [x] **Tab Switching**:
+  - [x] Clicking **"Overview"** tab shows high-level metrics and general structure tips.
+  - [x] Clicking **"Keyword Match"** tab filters feedback to matched/missing technical keywords.
+  - [x] Clicking **"Bullet Improvements"** tab filters feedback to action verb and metric enhancements.
+- [x] **Core Criteria Breakdown Bars**:
+  - [x] Renders 4 horizontal progress bars with percentage values and target indicators.
+- [x] **Export & Recalculate Actions**:
+  - [x] Clicking **"Export Report"** generates and triggers download of the plain-text ATS analysis report.
+  - [x] Clicking **"Re-calculate"** triggers loading spinner and simulated re-analysis toast.
 
 ### Responsive Scaling (`/ats-test`)
-- [ ] **Mobile (375px)**: Breakdown cards and feedback cards stack vertically with touch targets $\ge 44\text{px}$.
-- [ ] **Tablet (768px)**: 2-column breakdown grid renders without text clipping.
-- [ ] **Desktop Full**: Master card renders with radial badge in left hero block and 4-pillar grid in right block.
+- [x] **Mobile (375px)**: Breakdown cards and feedback cards stack vertically with touch targets $\ge 44\text{px}$.
+- [x] **Tablet (768px)**: 2-column breakdown grid renders without text clipping.
+- [x] **Desktop Full**: Master card renders with radial badge in left hero block and 4-pillar grid in right block.
+
+---
+
+## Day 5 Multi-Step Regeneration Modal & AI Pipeline QA Checklist
+
+### Modal Lifecycle & Backdrop (`RegenerationModal.jsx`)
+- [x] **Backdrop Dimming & Blur**: Modal overlays screen with `bg-olive-wood/65` and backdrop blur to prevent background interaction during AI processing.
+- [x] **Progress Bar Synchronicity**:
+  - [x] Overall progress smoothly increments from 0% towards 100%.
+  - [x] Reaches 100% upon pipeline completion.
+- [x] **5-Step Sequential Checklist**:
+  - [x] **Step 1**: "Querying GitHub API for latest commits" displays spinner then transitions to green checkmark.
+  - [x] **Step 2**: "Extracting tech stack & project context" displays contextual framework analyzer status.
+  - [x] **Step 3**: "Synthesizing tailored bullet points with Gemini AI" updates to indicate STAR accomplishment generation.
+  - [x] **Step 4**: "Injecting formatted entries into .docx" confirms OpenXML document structure preservation.
+  - [x] **Step 5**: "Computing ATS compatibility score" shows score re-calculation.
+- [x] **Error State & Fallback**:
+  - [x] Error alert renders cleanly with red alert badge if GitHub API rate limit or network failure occurs.
+  - [x] "Retry Pipeline" button re-invokes regeneration with clean state.
+- [x] **Success Completion State**:
+  - [x] Displays success icon and "View Updated Dashboard & Resume" primary action button.
+
+---
+
+## Day 6 Version History, Rollback & Diff Viewer QA Checklist
+
+### Version Control & Listing (`VersionHistoryList.jsx`)
+- [x] **Chronological Sorting**: Lists all generated versions with newest builds at top.
+- [x] **Version Metadata & Tags**:
+  - [x] Version badge (`v1`, `v2`, `v3`) formatted with sage green badge.
+  - [x] ATS score badge with tier coloring (Emerald for $\ge 80\%$, Amber for $60-79\%$, Rose for $<60\%$).
+  - [x] Formatted timestamp (`Generated: Sep 25, 2026, 4:15 PM`).
+- [x] **Download Action**:
+  - [x] Direct download button triggers `.docx` file retrieval via secure API endpoint.
+- [x] **Version Selection / Rollback**:
+  - [x] Clicking "Select" switches active document preview in preview pane.
+  - [x] Displays toast notification confirming preview switch.
+
+### Visual Diff & Changes Inspector (`ResumeDiffViewer.jsx`)
+- [x] **Side-by-Side Mode**:
+  - [x] Left column displays original uploaded baseline bullets with strikeout indicators.
+  - [x] Right column displays AI-synthesized bullet points with emerald green addition highlights.
+- [x] **Unified Diff Mode**:
+  - [x] Displays inline diff view with `+` additions and `-` removals.
+- [x] **Impact Badges & ATS Delta**:
+  - [x] Displays quantified score improvement badge (`ATS Score: +30% Improvement`).
+  - [x] Displays per-bullet impact tags (`+15% ATS Keywords`, `+22% Quantifiable Metrics`, `+18% Action Verbs`).
+
+---
+
+## Day 7 End-to-End Pipeline, QA Automation & Demo Showcase Checklist
+
+### Interactive Demo Showcase (`/demo`)
+- [x] **Evaluator Showcase Page**: Accessible directly at `/demo` without mandatory prior backend seeding.
+- [x] **Candidate Preset Switcher**:
+  - [x] "Alex Morgan (Full Stack Engineer)" loads high-impact engineering projects and ATS 94% data.
+  - [x] "Elena Rostova (AI/ML Engineer)" loads LLM and inference microservices projects with ATS 96% data.
+- [x] **All 5 Feature Tabs Active**:
+  - [x] Resume Preview (US letter layout, zoom, and download actions)
+  - [x] ATS Score Engine (radial gauge, 4 pillars, and feedback expanders)
+  - [x] AI Diff Inspector (Side-by-side and unified diffs)
+  - [x] Version History (timeline and rollback selector)
+  - [x] QA Test Suite (Automated check simulations and log exporter)
+
+### QA Test Harness (`QATestRunner.jsx`)
+- [x] **14 Automated Checkpoints**: Validates all frontend modules, tokens, APIs, and responsive viewports.
+- [x] **Day Filter Tabs**: Allows filtering test cases by Day 1 through Day 7.
+- [x] **Export QA Log**: Generates and downloads plain-text QA test execution summary report.
+- [x] **Re-run QA Suite**: Triggers interactive test rerun with animated pass state confirmations.
+
+### Cross-Browser & Viewport Responsiveness
+- [x] **Mobile (375px)**: Sticky bars wrap, cards stack vertically, touch targets $\ge 44\text{px}$.
+- [x] **Tablet (768px)**: 2-column grid scaling with zero layout truncation.
+- [x] **Desktop (1280px+)**: Multi-column dashboard grid with max-width container and crisp typography.
+
