@@ -17,22 +17,32 @@ else:
 
 
 def create_db_engine(url: str):
-    c_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
-    return create_engine(url, connect_args=c_args)
+    """Creates SQLAlchemy engine with optimized connection pooling (pool_size=10, max_overflow=20, pool_recycle=1800, pool_pre_ping=True)."""
+    if url.startswith("sqlite"):
+        return create_engine(
+            url,
+            connect_args={"check_same_thread": False},
+            pool_pre_ping=True,
+        )
+
+    return create_engine(
+        url,
+        pool_size=10,
+        max_overflow=20,
+        pool_recycle=1800,
+        pool_pre_ping=True,
+    )
 
 
 try:
     engine = create_db_engine(database_url)
-    # Test connection to ensure host resolves and DB is reachable
     with engine.connect() as conn:
         pass
 except Exception:
-    # Fallback to local SQLite database if remote Postgres DB is unreachable or unconfigured
     database_url = "sqlite:///./resume_auto_updater.db"
     engine = create_db_engine(database_url)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
 
