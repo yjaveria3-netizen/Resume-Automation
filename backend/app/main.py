@@ -1,4 +1,7 @@
+import os
 import sys
+import shutil
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Ensure project root directory is in sys.path so 'services' and 'docx_engine' are resolvable regardless of execution CWD
@@ -9,6 +12,7 @@ if str(ROOT_DIR) not in sys.path:
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import engine, Base, get_db
@@ -22,26 +26,30 @@ from app.schemas.pipeline import RegenerationResponse
 from app.services.pipeline import run_resume_regeneration_pipeline
 
 # Auto-create storage directory on startup
-Path(settings.STORAGE_DIR).mkdir(parents=True, exist_ok=True)
+storage_path = Path(settings.STORAGE_DIR)
+storage_path.mkdir(parents=True, exist_ok=True)
 
 # Auto-create DB tables on startup (users, github_accounts, projects, resumes, resume_versions)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Backend API for Resume Auto-Updater",
-    version="0.1.0",
+    description="Production API for Resume Auto-Updater",
+    version="1.0.0",
 )
 
-# CORS Middleware setup
-if settings.FRONTEND_URL:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[settings.FRONTEND_URL, "*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# CORS Middleware setup with dynamic CORS_ORIGINS from env
+allowed_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",") if origin.strip()]
+if settings.FRONTEND_URL and settings.FRONTEND_URL not in allowed_origins:
+    allowed_origins.append(settings.FRONTEND_URL)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins if allowed_origins else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
@@ -65,9 +73,32 @@ async def regenerate_resume_alias(
     return run_resume_regeneration_pipeline(str(current_user.id), db)
 
 
-@app.get("/health")
-def health_check():
+@app.get("/health", tags=["health"])
+def health_check(db: Session = Depends(get_db)):
+    """Production health check testing DB connectivity SELECT 1, storage directory availability, and service status."""
+    db_status = "disconnected"
+    try:
+        db.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    storage_available = storage_path.exists()
+    free_disk_mb = 0
+    try:
+        total, used, free = shutil.disk_usage(storage_path)
+        free_disk_mb = free // (1024 * 1024)
+    except Exception:
+        pass
+
     return {
-        "status": "healthy",
-        "service": settings.PROJECT_NAME,
+        "status": "healthy" if db_status == "connected" else "degraded",
+        "database": db_status,
+        "storage": {
+            "available": storage_available,
+            "free_disk_mb": free_disk_mb,
+            "path": str(storage_path.resolve()),
+        },
+        "version": "1.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
