@@ -106,7 +106,7 @@ flowchart LR
 ---
 
 ## Slide 8: Q&A & Thank You
-- **Demo Script:** [DEMO_SCRIPT.md](file:///c:/Users/Iraj%20Imran/Documents/Resume-Automation/docs/DEMO_SCRIPT.md)
-- **QA Report:** [QA_FINAL_REPORT.md](file:///c:/Users/Iraj%20Imran/Documents/Resume-Automation/docs/QA_FINAL_REPORT.md)
-- **Security Audit:** [SECURITY_AUDIT_REPORT.md](file:///c:/Users/Iraj%20Imran/Documents/Resume-Automation/docs/SECURITY_AUDIT_REPORT.md)
+- **Demo Script:** [DEMO_SCRIPT.md]
+- **QA Report:** [QA_FINAL_REPORT.md]
+- **Security Audit:** [SECURITY_AUDIT_REPORT.md]
 - **Audience Q&A Lead:** Person B (MC)
