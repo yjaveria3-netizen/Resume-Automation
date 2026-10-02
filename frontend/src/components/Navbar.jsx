@@ -19,7 +19,7 @@ export default function Navbar() {
     }`;
 
   return (
-    <header className="h-16 bg-white border-b border-khaki/40 shadow-xs sticky top-0 z-50">
+    <header className="h-16 bg-white border-b border-khaki/40 shadow-xs sticky top-0 z-40">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
         {/* Brand Logo & Title */}
         <Link to={authenticated ? '/dashboard' : '/login'} className="flex items-center space-x-2.5 group">
@@ -61,7 +61,10 @@ export default function Navbar() {
                 Upload Resume
               </NavLink>
               {user?.email && (
-                <span className="hidden lg:inline-block px-3 py-1.5 text-xs font-semibold rounded-xl bg-khaki-light text-olive-wood/80 border border-khaki/40">
+                <span
+                  className="hidden lg:inline-block truncate max-w-[180px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-khaki-light text-olive-wood/80 border border-khaki/40"
+                  title={user.email}
+                >
                   {user.email}
                 </span>
               )}

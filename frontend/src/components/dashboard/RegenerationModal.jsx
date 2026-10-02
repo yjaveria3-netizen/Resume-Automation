@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const REGENERATION_STEPS = [
   {
@@ -44,6 +44,44 @@ export default function RegenerationModal({
 }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(0);
+  const modalRef = useRef(null);
+
+  // Close modal on Escape key press and trap focus
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (onClose) onClose();
+      }
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusables = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+        const firstElement = focusables[0];
+        const lastElement = focusables[focusables.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    if (modalRef.current) {
+      modalRef.current.focus();
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -91,7 +129,11 @@ export default function RegenerationModal({
   const actualProgress = isFinished ? 100 : progress;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-olive-wood/65 backdrop-blur-xs animate-fade-in">
+    <div
+      tabIndex={-1}
+      ref={modalRef}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-olive-wood/65 backdrop-blur-xs animate-fade-in outline-none"
+    >
       <div className="bg-white rounded-3xl border border-khaki/50 shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative overflow-hidden">
         {/* Soft background glow accents */}
         <div className="absolute -top-20 -right-20 w-44 h-44 bg-sage/15 rounded-full blur-2xl pointer-events-none" />

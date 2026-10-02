@@ -221,7 +221,7 @@ export function ResumePreviewEmpty({ onUploadClick }) {
  * @param {Function} [props.onUploadClick] - Optional upload trigger callback
  * @param {string} [props.className=""] - Additional class names for container
  */
-export default function ResumePreview({
+function ResumePreview({
   data = defaultResumeData,
   isLoading = false,
   isEmpty = false,
@@ -456,3 +456,5 @@ export default function ResumePreview({
     </div>
   );
 }
+
+export default React.memo(ResumePreview);

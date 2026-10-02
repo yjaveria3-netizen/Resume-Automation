@@ -281,9 +281,11 @@ export default function Dashboard() {
                 <div className="w-12 h-12 rounded-2xl bg-sage/20 text-sage flex items-center justify-center font-extrabold text-lg border border-sage/30 shadow-xs">
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <div>
+                <div className="overflow-hidden">
                   <h3 className="text-base font-bold text-olive-wood">{user?.name || 'Welcome User'}</h3>
-                  <p className="text-xs text-olive-wood/60 font-medium">{user?.email || 'user@example.com'}</p>
+                  <p className="text-xs text-olive-wood/60 font-medium truncate max-w-[180px] block" title={user?.email || 'user@example.com'}>
+                    {user?.email || 'user@example.com'}
+                  </p>
                 </div>
               </div>
               <div className="pt-2.5 border-t border-khaki/20 flex items-center justify-between text-xs">
@@ -350,7 +352,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* 4. Large High-Emphasis 'Update Resume' Action Trigger Button */}
+            {/* 4. Large High-Emphasis 'Update Resume' Action Trigger Button with Pulse Glow */}
             <div className="bg-gradient-to-br from-sage/10 via-white to-khaki-light/40 p-5 rounded-3xl border-2 border-sage/40 shadow-sm space-y-3.5 relative overflow-hidden">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-sage animate-ping" />
@@ -371,7 +373,7 @@ export default function Dashboard() {
                 type="button"
                 onClick={handleUpdateResume}
                 disabled={isRegenerating}
-                className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer ring-4 ring-sage/20 disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer ring-4 ring-sage/20 disabled:opacity-50 hover:animate-pulse-glow"
               >
                 <svg className="w-5 h-5 text-amber-300 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clipRule="evenodd" />
@@ -382,7 +384,33 @@ export default function Dashboard() {
           </div>
 
           {/* ================= RIGHT MAIN AREA (2/3 Width) ================= */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-6 relative">
+            {/* Lightweight CSS Confetti Shower when ATS score >= 85 */}
+            {atsScore >= 85 && (
+              <div className="pointer-events-none absolute inset-x-0 -top-6 h-48 overflow-hidden z-30 flex justify-around">
+                {[
+                  { color: '#10B981', left: '8%', delay: '0s' },
+                  { color: '#F59E0B', left: '22%', delay: '0.3s' },
+                  { color: '#8A9A86', left: '38%', delay: '0.1s' },
+                  { color: '#3B82F6', left: '54%', delay: '0.5s' },
+                  { color: '#EC4899', left: '68%', delay: '0.2s' },
+                  { color: '#8B5CF6', left: '82%', delay: '0.4s' },
+                  { color: '#10B981', left: '94%', delay: '0.6s' },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="w-2.5 h-2.5 rounded-sm animate-confetti"
+                    style={{
+                      backgroundColor: item.color,
+                      left: item.left,
+                      animationDelay: item.delay,
+                      position: 'absolute',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Header Tabs Navigation Bar */}
             <div className="bg-white p-2 rounded-3xl border border-khaki/40 shadow-xs flex items-center justify-between gap-2 overflow-x-auto">
               <div className="flex items-center gap-1.5 w-full">
@@ -415,7 +443,11 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                   <span>ATS Score Breakdown</span>
-                  <span className="px-2 py-0.5 rounded-full bg-sage text-white text-[10px] font-extrabold">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-white text-[10px] font-extrabold ${
+                      atsScore >= 85 ? 'bg-emerald-600 animate-pulse' : 'bg-sage'
+                    }`}
+                  >
                     {atsScore}%
                   </span>
                 </button>
@@ -442,9 +474,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* TAB CONTENT AREA */}
+            {/* TAB CONTENT AREA with Smooth Fade-in Transitions (transition-opacity duration-200) */}
             {activeTab === 'preview' && (
-              <div className="space-y-4">
+              <div className="space-y-4 transition-opacity duration-200 ease-in-out animate-fade-in">
                 <ResumeActionBar
                   lastUpdated="Updated just now"
                   onRegenerate={handleUpdateResume}
@@ -455,19 +487,21 @@ export default function Dashboard() {
             )}
 
             {activeTab === 'ats' && (
-              <AtsScoreCard
-                score={atsData.score}
-                tier={atsData.tier}
-                breakdown={atsData.breakdown}
-                feedback={atsData.feedback}
-                lastAnalyzed={atsData.lastAnalyzed}
-                onRecalculate={handleUpdateResume}
-                isAnalyzing={isRegenerating}
-              />
+              <div className="transition-opacity duration-200 ease-in-out animate-fade-in">
+                <AtsScoreCard
+                  score={atsData.score}
+                  tier={atsData.tier}
+                  breakdown={atsData.breakdown}
+                  feedback={atsData.feedback}
+                  lastAnalyzed={atsData.lastAnalyzed}
+                  onRecalculate={handleUpdateResume}
+                  isAnalyzing={isRegenerating}
+                />
+              </div>
             )}
 
             {activeTab === 'history' && (
-              <div className="space-y-6">
+              <div className="space-y-6 transition-opacity duration-200 ease-in-out animate-fade-in">
                 <VersionHistoryList
                   versions={resumeVersions}
                   selectedVersionId={selectedVersion?.id}
