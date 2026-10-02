@@ -154,7 +154,7 @@ async def regenerate_resume_alias(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate authentication credentials",
-                headers={"WWW-Authenticate":="Bearer"},
+                headers={"WWW-Authenticate": "Bearer"},
             ) from exc
 
     if not target_user:
