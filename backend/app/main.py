@@ -1,29 +1,38 @@
 import os
 import sys
 import shutil
+import asyncio
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 # Ensure project root directory is in sys.path so 'services' and 'docx_engine' are resolvable regardless of execution CWD
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from jose import jwt, JWTError
+import httpx
+
 from app.core.config import settings
 from app.core.database import engine, Base, get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, JWT_SECRET, JWT_ALGORITHM
 from app.models.user import User
+from app.models.automation_log import AutomationLog
 from app.routers.auth import router as auth_router
 from app.routers.github_auth import router as github_auth_router
 from app.routers.projects import router as projects_router
 from app.routers.resumes import router as resumes_router
 from app.schemas.pipeline import RegenerationResponse
 from app.services.pipeline import run_resume_regeneration_pipeline
+
+logger = logging.getLogger("keep_alive")
 
 # Auto-create storage directory on startup
 storage_path = Path(settings.STORAGE_DIR)
@@ -58,17 +67,39 @@ app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(resumes_router, prefix="/resumes", tags=["resumes"])
 
 
+# Automatic Background Keep-Alive Self-Ping Task
+async def render_keep_alive_loop():
+    """Background loop that pings the server health check every 45 seconds to keep Render free web services awake."""
+    render_url = os.getenv("RENDER_EXTERNAL_URL", "").rstrip("/")
+    target_url = f"{render_url}/health" if render_url else "http://127.0.0.1:8000/health"
+    ping_interval = int(os.getenv("PING_INTERVAL", "45"))
+
+    logger.info(f"Starting automatic Render keep-alive loop (Target: {target_url}, Interval: {ping_interval}s)")
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            await asyncio.sleep(ping_interval)
+            try:
+                resp = await client.get(target_url)
+                if resp.status_code == 200:
+                    logger.info(f"[Keep-Alive] Ping success to {target_url}")
+                else:
+                    logger.warning(f"[Keep-Alive] Ping status {resp.status_code} to {target_url}")
+            except Exception as e:
+                logger.debug(f"[Keep-Alive] Self-ping status: {e}")
+
+
+@app.on_event("startup")
+async def start_keep_alive():
+    """Starts background keep-alive task on FastAPI app startup."""
+    if os.getenv("ENABLE_KEEP_ALIVE", "true").lower() in ("true", "1", "yes"):
+        asyncio.create_task(render_keep_alive_loop())
+
+
 @app.get("/", include_in_schema=False)
 def root_redirect():
     """Redirects root URL GET / directly to interactive Swagger API documentation."""
     return RedirectResponse(url="/docs")
-
-
-from uuid import UUID
-from fastapi import FastAPI, Depends, Request, HTTPException, status
-from jose import jwt, JWTError
-from app.core.dependencies import JWT_SECRET, JWT_ALGORITHM
-from app.models.automation_log import AutomationLog
 
 
 @app.post("/regenerate-resume", response_model=RegenerationResponse, tags=["resumes"])
@@ -81,8 +112,7 @@ async def regenerate_resume_alias(
     """
     auth_header = request.headers.get("Authorization", "")
     service_secret = request.headers.get("X-Service-Secret", "")
-    
-    # Try parsing JSON body if present
+
     body_data = {}
     try:
         body_data = await request.json()
@@ -94,17 +124,16 @@ async def regenerate_resume_alias(
     bearer_token = auth_header.replace("Bearer ", "").strip() if auth_header.startswith("Bearer ") else ""
 
     if service_secret in valid_secrets or bearer_token in valid_secrets:
-        # Service authentication: resolve user from payload or first user in DB
         user_id_cand = body_data.get("user_id")
         if user_id_cand:
             try:
+                from uuid import UUID
                 target_user = db.query(User).filter(User.id == UUID(str(user_id_cand))).first()
             except Exception:
                 pass
         if not target_user:
             target_user = db.query(User).first()
     else:
-        # Validate standard JWT Bearer token
         if not bearer_token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -112,6 +141,7 @@ async def regenerate_resume_alias(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         try:
+            from uuid import UUID
             payload = jwt.decode(bearer_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
             user_id_str: str = payload.get("sub")
             if not user_id_str:
@@ -124,7 +154,7 @@ async def regenerate_resume_alias(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"},
+                headers={"WWW-Authenticate":="Bearer"},
             ) from exc
 
     if not target_user:
@@ -136,7 +166,6 @@ async def regenerate_resume_alias(
     repo_name = body_data.get("repo_name", "resume-auto-updater")
     try:
         result = run_resume_regeneration_pipeline(str(target_user.id), db)
-        # Log successful run to automation_logs
         log_entry = AutomationLog(
             repo_name=repo_name,
             user_id=target_user.id,
@@ -147,7 +176,6 @@ async def regenerate_resume_alias(
         db.commit()
         return result
     except Exception as e:
-        # Log failure run to automation_logs
         log_entry = AutomationLog(
             repo_name=repo_name,
             user_id=target_user.id,
@@ -157,7 +185,6 @@ async def regenerate_resume_alias(
         db.add(log_entry)
         db.commit()
         raise e
-
 
 
 @app.get("/health", tags=["health"])
