@@ -1,8 +1,8 @@
 # Database schema
 
-Resume Auto-Updater stores users, GitHub links, resume files, generated versions, ranked projects, optional AI cache, and automation logs.
+Resume Auto-Updater stores users, GitHub links, resume files, generated versions, ranked projects, optional AI cache, automation logs, a human review queue, job descriptions, and archived projects.
 
-This file is the Day 10 handoff document. It matches the SQL in `backend/db/scheme.sql`, the Day 7 indexes/views in `backend/db/views.sql`, and the SQLAlchemy models under `backend/app/models/`.
+This file matches `backend/db/scheme.sql`, Day 7 views in `backend/db/views.sql`, Day 11–12 migrations in `backend/db/migrations/`, and the SQLAlchemy models under `backend/app/models/`.
 
 ## Entity-relationship diagram
 
@@ -14,6 +14,10 @@ erDiagram
     users ||--o{ automation_logs : "triggers"
     resumes ||--o{ resume_versions : "versions"
     users ||--o{ ai_bullet_cache : "caches"
+    users ||--o{ bullet_suggestions : "reviews"
+    users ||--o{ job_descriptions : "matches"
+    users ||--o{ archived_projects : "parks"
+    resumes ||--o{ job_descriptions : "scored against"
 
     users {
         uuid id PK
@@ -81,6 +85,40 @@ erDiagram
         text status
         text error_message
         timestamptz created_at
+    }
+
+    bullet_suggestions {
+        uuid id PK
+        uuid user_id FK
+        text repo_name
+        text commit_sha
+        text commit_message
+        text proposed_bullet
+        jsonb diff_summary
+        varchar status
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    job_descriptions {
+        uuid id PK
+        uuid user_id FK
+        uuid resume_id FK
+        text title
+        text jd_text
+        int match_score
+        jsonb matched_keywords
+        jsonb missing_keywords
+        timestamptz created_at
+    }
+
+    archived_projects {
+        uuid id PK
+        uuid user_id FK
+        text project_name
+        text[] tech_stack
+        text bullet_point
+        timestamptz archived_at
     }
 ```
 
@@ -245,6 +283,83 @@ This table is specified for Day 10 documentation. Add it in a later migration if
 
 **Indexes:** `idx_automation_logs_user_id` on `(user_id, created_at DESC)`.
 
+---
+
+### 8. `bullet_suggestions` (Day 11 — review queue)
+
+| Field | Value |
+|---|---|
+| Description | Human-in-the-loop inbox. Gemini proposes a bullet; the user accepts or dismisses it before the `.docx` changes. |
+| Primary key | `id` UUID |
+| Foreign keys | `user_id` → `users.id` **ON DELETE CASCADE** |
+| Migration | `backend/db/migrations/002_add_suggestions.sql` |
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK, `gen_random_uuid()` |
+| user_id | UUID | FK, not null |
+| repo_name | TEXT | not null — which repo inspired the bullet |
+| commit_sha | TEXT | optional Git commit |
+| commit_message | TEXT | optional |
+| proposed_bullet | TEXT | not null — the AI text waiting for review |
+| diff_summary | JSONB | before/after snippet Person D can store |
+| status | VARCHAR(20) | `pending` / `accepted` / `dismissed` (CHECK) |
+| created_at | TIMESTAMPTZ | default `now()` |
+| updated_at | TIMESTAMPTZ | default `now()` — audit when status changes |
+
+**Indexes:** `idx_suggestions_user_status` on `(user_id, status, created_at DESC)`.
+
+Status is a **constraint**, not a free string. Invalid values like `done` are rejected by PostgreSQL.
+
+---
+
+### 9. `job_descriptions` (Day 12 — job matcher)
+
+| Field | Value |
+|---|---|
+| Description | A target job posting plus keyword match results against a resume. |
+| Primary key | `id` UUID |
+| Foreign keys | `user_id` → `users.id` **ON DELETE CASCADE**; `resume_id` → `resumes.id` **ON DELETE CASCADE** |
+| Migration | `backend/db/migrations/003_add_jd_and_archives.sql` |
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK |
+| user_id | UUID | FK, not null |
+| resume_id | UUID | FK, nullable if scored before upload |
+| title | TEXT | job title |
+| jd_text | TEXT | full job description, not null |
+| match_score | INT | 0–100 style score from Person D |
+| matched_keywords | JSONB | keywords found in the resume |
+| missing_keywords | JSONB | keywords the resume still lacks |
+| created_at | TIMESTAMPTZ | default `now()` |
+
+**Indexes:** `idx_jd_user_id` on `(user_id, created_at DESC)`; `idx_jd_resume_id` on `resume_id`.
+
+---
+
+### 10. `archived_projects` (Day 12 — 1-page strictness)
+
+| Field | Value |
+|---|---|
+| Description | Projects taken off the one-page resume so it still fits one page. Rows are **parked**, not deleted, so a later JD can restore them. |
+| Primary key | `id` UUID |
+| Foreign keys | `user_id` → `users.id` **ON DELETE CASCADE** |
+| Migration | `backend/db/migrations/003_add_jd_and_archives.sql` |
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK |
+| user_id | UUID | FK, not null |
+| project_name | TEXT | not null |
+| tech_stack | TEXT[] | languages / libraries |
+| bullet_point | TEXT | last bullet that lived on the resume |
+| archived_at | TIMESTAMPTZ | default `now()` |
+
+**Note:** `tech_stack` here is `TEXT[]`, while `projects.tech_stack` is `JSONB`. When restoring an archived project to the resume, convert the type.
+
+**Indexes:** `idx_archived_projects_user` on `(user_id, archived_at DESC)`.
+
 ## Views (Day 7)
 
 | View | Purpose |
@@ -263,9 +378,13 @@ Dashboard screens should read views instead of repeating the same joins.
 - **Encrypted tokens:** GitHub access tokens are ciphertext in the database, not plain OAuth strings.
 - **Indexes match real queries:** dashboard by `user_id`, versions by `(resume_id, created_at DESC)`, projects by `(user_id, rank_score DESC)`.
 - **Cache table:** `ai_bullet_cache` is the denormalized exception: it stores AI JSON on purpose so we do not re-call Gemini for the same commit.
+- **Review queue:** `bullet_suggestions` is 1:N from `users`. Status CHECK keeps the inbox in three legal states. Composite index matches “show my pending items”.
+- **Soft archive:** `archived_projects` is a parking lot. Deleting from the visible resume must INSERT here, not DROP the history.
+- **JD matching:** keyword arrays live in JSONB so Person D can store variable-length token lists without extra junction tables for v1.
 
 Verify indexes and view latency with:
 
 ```bash
 python scripts/verify_day7_views.py
 ```
+Day 11-12 migrations: run 002_add_suggestions.sql, 003_add_jd_and_archives.sql and 004_add_updated_at_trigger.sql in order in the Supabase SQL Editor.

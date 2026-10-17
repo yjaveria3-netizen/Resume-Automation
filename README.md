@@ -16,7 +16,9 @@ Connect GitHub to a `.docx` resume. On every push to `main`, the app picks stron
 
 Students and junior engineers forget to update the Projects section after they ship code. This product watches GitHub, regenerates that section, scores ATS likelihood, and keeps a version history so you can download or roll back.
 
-In production the loop is: **push code → GitHub webhook → n8n → FastAPI pipeline → new resume version**.
+In production the loop is: **push code → GitHub webhook → n8n → FastAPI pipeline → review queue (`bullet_suggestions`) → new resume version**.
+
+Day 11 adds a **human-in-the-loop** inbox: AI bullets sit as `pending` until a person accepts or dismisses them. Day 12 adds **job matching** (`job_descriptions`) and a parking table for projects squeezed off a one-page resume (`archived_projects`).
 
 ## Architecture
 
@@ -39,6 +41,10 @@ flowchart LR
     API --> Docx
     GH -->|push webhook| N8N
     N8N -->|POST /regenerate-resume| API
+    API -->|pending bullets| Queue[bullet_suggestions]
+    Queue -->|accept / dismiss| React
+    API --> JD[job_descriptions]
+    API --> Archive[archived_projects]
 ```
 
 A larger diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Database tables and keys: [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md).
@@ -70,6 +76,14 @@ Apply schema and Day 7 views (from `psql` or any SQL client):
 ```bash
 psql "$DATABASE_URL" -f backend/db/scheme.sql
 psql "$DATABASE_URL" -f backend/db/views.sql
+psql "$DATABASE_URL" -f backend/db/migrations/002_add_suggestions.sql
+psql "$DATABASE_URL" -f backend/db/migrations/003_add_jd_and_archives.sql
+```
+
+Or from the project root (Postgres if `DATABASE_URL` is set, otherwise local SQLite):
+
+```bash
+python scripts/apply_day11_12_migrations.py
 ```
 
 If `DATABASE_URL` is empty, the backend can still run against a local SQLite file for demos.
@@ -159,6 +173,7 @@ n8n body example:
 python scripts/monitor_pipeline.py
 python scripts/verify_day7_views.py
 python scripts/load_test_automation.py
+python scripts/apply_day11_12_migrations.py
 ```
 
 Load-test plan: [`docs/LOAD_TEST_PLAN.md`](docs/LOAD_TEST_PLAN.md)
