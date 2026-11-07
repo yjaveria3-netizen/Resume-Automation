@@ -47,7 +47,7 @@ flowchart LR
     API --> Archive[archived_projects]
 ```
 
-A larger diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Database tables and keys: [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md).
+A larger diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Final Day 13 map: [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md). Database tables and keys: [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md).
 
 ## Tech stack
 
@@ -124,7 +124,7 @@ n8n
 
 Editor: [http://localhost:5678](http://localhost:5678)
 
-Import `workflows/n8n_production_workflow_v1.0.json` (or `n8n/workflows/n8n_full_live_pipeline.json`), set it **Active**, and point GitHub’s webhook to:
+Import `workflows/n8n_production_workflow_v1.1.json` (or `n8n/workflows/n8n_full_live_pipeline.json`), set it **Active**, and point GitHub’s webhook to:
 
 `http://<public-or-local-host>:5678/webhook/github-push`
 

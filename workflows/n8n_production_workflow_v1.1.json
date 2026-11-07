@@ -194,7 +194,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first()?.json || {};\nconst commitData = $('Code in JavaScript')?.first()?.json || {};\n\nconst repo_name = input.repo_name || commitData.repo_name || 'resume-auto-updater';\nconst user_id = input.user_id || commitData.user_id || 'fa9690b9-58e0-49a8-8593-8973c72be3b4';\nconst statusCode = input.statusCode || input.error?.statusCode || 500;\nconst errorDetail = input.error?.message || input.message || input.detail || 'Pipeline execution failed';\nconst timestamp = new Date().toISOString();\n\n// Red color (#E02424 -> 14689316 decimal) for Discord rich embed\nconst embedColor = 14689316;\n\nconst payload = {\n  content: '🚨 **Resume Auto-Updater Pipeline Error**',\n  embeds: [\n    {\n      title: '■ Resume Auto-Updater Pipeline Error',\n      color: embedColor,\n      timestamp: timestamp,\n      fields: [\n        {\n          name: 'Repository',\n          value: String(repo_name),\n          inline: true\n        },\n        {\n          name: 'User ID',\n          value: String(user_id),\n          inline: true\n        },\n        {\n          name: 'HTTP Status',\n          value: String(statusCode),\n          inline: true\n        },\n        {\n          name: 'Error Detail',\n          value: String(errorDetail),\n          inline: false\n        }\n      ],\n      footer: {\n        text: 'Resume Auto-Updater • Day 6 Automation Pipeline'\n      }\n    }\n  ],\n  text: `■ Resume Auto-Updater Pipeline Error in ${repo_name}: ${errorDetail}`,\n  attachments: [\n    {\n      color: '#E02424',\n      title: '■ Resume Auto-Updater Pipeline Error',\n      fields: [\n        { title: 'Repository', value: String(repo_name), short: true },\n        { title: 'User ID', value: String(user_id), short: true },\n        { title: 'HTTP Status', value: String(statusCode), short: true },\n        { title: 'Error Detail', value: String(errorDetail), short: false }\n      ],\n      ts: Math.floor(Date.now() / 1000)\n    }\n  ]\n};\n\nreturn [{ json: payload }];"
+        "jsCode": "const input = $input.first()?.json || {};\nconst commitData = $('Code in JavaScript')?.first()?.json || {};\n\nconst repo_name = input.repo_name || commitData.repo_name || 'resume-auto-updater';\nconst user_id = input.user_id || commitData.user_id || 'fa9690b9-58e0-49a8-8593-8973c72be3b4';\nconst statusCode = input.statusCode || input.error?.statusCode || 500;\nconst errorDetail = input.error?.message || input.message || input.detail || 'Pipeline execution failed';\nconst timestamp = new Date().toISOString();\n\n// Red color (#E02424 -> 14689316 decimal) for Discord rich embed\nconst embedColor = 14689316;\n\nconst payload = {\n  content: '\ud83d\udea8 **Resume Auto-Updater Pipeline Error**',\n  embeds: [\n    {\n      title: '\u25a0 Resume Auto-Updater Pipeline Error',\n      color: embedColor,\n      timestamp: timestamp,\n      fields: [\n        {\n          name: 'Repository',\n          value: String(repo_name),\n          inline: true\n        },\n        {\n          name: 'User ID',\n          value: String(user_id),\n          inline: true\n        },\n        {\n          name: 'HTTP Status',\n          value: String(statusCode),\n          inline: true\n        },\n        {\n          name: 'Error Detail',\n          value: String(errorDetail),\n          inline: false\n        }\n      ],\n      footer: {\n        text: 'Resume Auto-Updater \u2022 Day 6 Automation Pipeline'\n      }\n    }\n  ],\n  text: `\u25a0 Resume Auto-Updater Pipeline Error in ${repo_name}: ${errorDetail}`,\n  attachments: [\n    {\n      color: '#E02424',\n      title: '\u25a0 Resume Auto-Updater Pipeline Error',\n      fields: [\n        { title: 'Repository', value: String(repo_name), short: true },\n        { title: 'User ID', value: String(user_id), short: true },\n        { title: 'HTTP Status', value: String(statusCode), short: true },\n        { title: 'Error Detail', value: String(errorDetail), short: false }\n      ],\n      ts: Math.floor(Date.now() / 1000)\n    }\n  ]\n};\n\nreturn [{ json: payload }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -222,6 +222,38 @@
       ],
       "id": "6101ccc0-4328-4e87-ac29-3b0515a2f779",
       "name": "Send Alert to Team Channel",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const commitData = $('Code in JavaScript')?.first()?.json || {};\nconst timestamp = new Date().toISOString();\nconst repo = String(commitData.repo_name || 'resume-auto-updater');\nconst userId = String(commitData.user_id || 'unknown');\nconst message = String(commitData.commit_message || '');\nreturn [{\n  json: {\n    content: 'Pending review queue: new AI bullets after git push',\n    embeds: [{\n      title: 'Resume Auto-Updater \u2014 pending suggestions',\n      color: 2263842,\n      timestamp,\n      fields: [\n        { name: 'Repository', value: repo, inline: true },\n        { name: 'User ID', value: userId, inline: true },\n        { name: 'Commit', value: message.slice(0, 180) || '(none)', inline: false },\n        { name: 'Next step', value: 'Open React review queue: Accept / Edit / Dismiss', inline: false }\n      ],\n      footer: { text: 'Day 13 \u2014 human-in-the-loop notification' }\n    }]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -64
+      ],
+      "id": "d13-format-pending-notify",
+      "name": "Format Pending Review Notification"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TEAM_WEBHOOK_URL || 'https://httpbin.org/post' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -128,
+        -64
+      ],
+      "id": "d13-send-pending-notify",
+      "name": "Notify Review Queue",
       "onError": "continueRegularOutput"
     }
   ],
@@ -316,6 +348,28 @@
         [
           {
             "node": "Send Alert to Team Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Format Pending Review Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Pending Review Notification": {
+      "main": [
+        [
+          {
+            "node": "Notify Review Queue",
             "type": "main",
             "index": 0
           }
