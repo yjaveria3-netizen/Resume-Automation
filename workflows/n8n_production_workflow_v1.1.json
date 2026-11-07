@@ -5,29 +5,31 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "github-push",
-        "options": {}
+        "options": {
+          "rawBody": false
+        }
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -1792,
-        16
+        -1088,
+        96
       ],
-      "id": "e17965dc-98ef-4ec4-8688-1516fc1027f7",
+      "id": "31f1d6a6-a7a5-44db-b8bb-96be31b77095",
       "name": "Webhook",
       "webhookId": "1c3a643c-005e-4a01-903c-3db9465af3b6"
     },
     {
       "parameters": {
-        "jsCode": "const inputItem = $input.first()?.json || {};\nconst headers = inputItem.headers || {};\nconst signatureHeader = headers['x-hub-signature-256'] || headers['X-Hub-Signature-256'];\nconst rawBody = inputItem.body !== undefined ? inputItem.body : inputItem;\n\nlet isValid = false;\nif (signatureHeader) {\n  try {\n    const cryptoLib = (function() {\n      try {\n        const r = (typeof require !== 'undefined' ? require : (globalThis['req' + 'uire'] || null));\n        return r ? r('crypto') : null;\n      } catch (_) {\n        return null;\n      }\n    })();\n\n    if (cryptoLib) {\n      const secret = 'resume001122--';\n      const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);\n      const expectedSignature = 'sha256=' + cryptoLib\n        .createHmac('sha256', secret)\n        .update(payloadString)\n        .digest('hex');\n\n      const receivedBuffer = Buffer.from(signatureHeader);\n      const expectedBuffer = Buffer.from(expectedSignature);\n\n      if (receivedBuffer.length === expectedBuffer.length) {\n        isValid = cryptoLib.timingSafeEqual(receivedBuffer, expectedBuffer);\n      } else {\n        isValid = false;\n      }\n    }\n  } catch (err) {\n    isValid = false;\n  }\n}\n\nif (!isValid) {\n  return [];\n}\n\nreturn [{\n  json: {\n    isValid,\n    ...(typeof rawBody === 'object' ? rawBody : { body: rawBody })\n  }\n}];"
+        "jsCode": "const inputItem = $input.first()?.json || {};\nconst headers = inputItem.headers || {};\nconst signatureHeader = headers['x-hub-signature-256'] || headers['X-Hub-Signature-256'];\nconst rawBody = inputItem.body !== undefined ? inputItem.body : inputItem;\n\nlet isValid = false;\nif (signatureHeader) {\n  try {\n    const cryptoLib = (function() {\n      try {\n        const r = (typeof require !== 'undefined' ? require : (globalThis['req' + 'uire'] || null));\n        return r ? r('crypto') : null;\n      } catch (_) {\n        return null;\n      }\n    })();\n\n    if (cryptoLib) {\n      const secret = 'resume001122--';\n      const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);\n      const expectedSignature = 'sha256=' + cryptoLib\n        .createHmac('sha256', secret)\n        .update(payloadString)\n        .digest('hex');\n\n      const receivedBuffer = Buffer.from(signatureHeader);\n      const expectedBuffer = Buffer.from(expectedSignature);\n\n      if (receivedBuffer.length === expectedBuffer.length) {\n        isValid = cryptoLib.timingSafeEqual(receivedBuffer, expectedBuffer);\n      } else {\n        isValid = false;\n      }\n    }\n  } catch (err) {\n    isValid = false;\n  }\n}\n\nif (!isValid) {\n  throw new Error('Invalid or missing X-Hub-Signature-256');\n}\n\nreturn [{\n  json: {\n    isValid,\n    ...(typeof rawBody === 'object' ? rawBody : { body: rawBody })\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1616,
-        16
+        -912,
+        96
       ],
-      "id": "98207958-7007-4a36-aa0c-adc966af5373",
+      "id": "995a2646-0d70-4d69-9e9c-09a3c9b6c60d",
       "name": "Code in JavaScript1"
     },
     {
@@ -37,10 +39,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1440,
-        16
+        -736,
+        96
       ],
-      "id": "ff8e5321-68cd-4055-8c2a-12e723260ac7",
+      "id": "6b3e3301-912c-41b6-9894-6dfd9ad4d6ce",
       "name": "Code in JavaScript"
     },
     {
@@ -70,10 +72,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        -1264,
-        16
+        -560,
+        96
       ],
-      "id": "eb160bb6-b976-4ddd-9ed5-bea03ef769a0",
+      "id": "8ca99956-d4c2-423c-8988-c468de18e79d",
       "name": "Filter"
     },
     {
@@ -107,10 +109,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -1104,
-        16
+        -400,
+        96
       ],
-      "id": "972914e4-aa36-440a-a070-4373eb122f0a",
+      "id": "a0f61aa4-72f3-493d-aeb6-22aafabfcf36",
       "name": "HTTP Request",
       "retryOnFail": true,
       "waitBetweenTries": 2000,
@@ -153,10 +155,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -928,
-        16
+        -224,
+        96
       ],
-      "id": "a774207f-6385-4d0d-bf90-7c02b7d5ff38",
+      "id": "88b4f427-88e4-471d-b144-4f858d0cac28",
       "name": "If"
     },
     {
@@ -164,10 +166,10 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -704,
-        -80
+        0,
+        0
       ],
-      "id": "e97b6979-d147-4d8f-b547-ee77efac9c50",
+      "id": "97bdab79-33e9-4f77-8423-834d6f7c5bad",
       "name": "Success Logger"
     },
     {
@@ -179,30 +181,29 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -512,
-        -64
+        192,
+        16
       ],
-      "id": "7c7d7640-1611-4968-8122-97f5241dc2f0",
+      "id": "0817b051-46a5-40e3-b5cf-cdd74ff234e6",
       "name": "Execute a SQL query",
       "credentials": {
         "postgres": {
           "id": "kWiWxjR55XY1Qm1X",
           "name": "Postgres account"
         }
-      },
-      "onError": "continueRegularOutput"
+      }
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first()?.json || {};\nconst commitData = $('Code in JavaScript')?.first()?.json || {};\n\nconst repo_name = input.repo_name || commitData.repo_name || 'resume-auto-updater';\nconst user_id = input.user_id || commitData.user_id || 'fa9690b9-58e0-49a8-8593-8973c72be3b4';\nconst statusCode = input.statusCode || input.error?.statusCode || 500;\nconst errorDetail = input.error?.message || input.message || input.detail || 'Pipeline execution failed';\nconst timestamp = new Date().toISOString();\n\n// Red color (#E02424 -> 14689316 decimal) for Discord rich embed\nconst embedColor = 14689316;\n\nconst payload = {\n  content: '\ud83d\udea8 **Resume Auto-Updater Pipeline Error**',\n  embeds: [\n    {\n      title: '\u25a0 Resume Auto-Updater Pipeline Error',\n      color: embedColor,\n      timestamp: timestamp,\n      fields: [\n        {\n          name: 'Repository',\n          value: String(repo_name),\n          inline: true\n        },\n        {\n          name: 'User ID',\n          value: String(user_id),\n          inline: true\n        },\n        {\n          name: 'HTTP Status',\n          value: String(statusCode),\n          inline: true\n        },\n        {\n          name: 'Error Detail',\n          value: String(errorDetail),\n          inline: false\n        }\n      ],\n      footer: {\n        text: 'Resume Auto-Updater \u2022 Day 6 Automation Pipeline'\n      }\n    }\n  ],\n  text: `\u25a0 Resume Auto-Updater Pipeline Error in ${repo_name}: ${errorDetail}`,\n  attachments: [\n    {\n      color: '#E02424',\n      title: '\u25a0 Resume Auto-Updater Pipeline Error',\n      fields: [\n        { title: 'Repository', value: String(repo_name), short: true },\n        { title: 'User ID', value: String(user_id), short: true },\n        { title: 'HTTP Status', value: String(statusCode), short: true },\n        { title: 'Error Detail', value: String(errorDetail), short: false }\n      ],\n      ts: Math.floor(Date.now() / 1000)\n    }\n  ]\n};\n\nreturn [{ json: payload }];"
+        "jsCode": "const input = $input.first()?.json || {};\nconst commitData = $('Code in JavaScript')?.first()?.json || {};\n\nconst repo_name = input.repo_name || commitData.repo_name || 'resume-auto-updater';\nconst user_id = input.user_id || commitData.user_id || 'fa9690b9-58e0-49a8-8593-8973c72be3b4';\nconst statusCode = input.statusCode || input.error?.statusCode || 500;\nconst errorDetail = input.error?.message || input.message || input.detail || 'Pipeline execution failed';\nconst timestamp = new Date().toISOString();\n\n// Red color (#E02424 -> 14689316 decimal) for Discord rich embed\nconst embedColor = 14689316;\n\nconst payload = {\n  content: '🚨 **Resume Auto-Updater Pipeline Error**',\n  embeds: [\n    {\n      title: '■ Resume Auto-Updater Pipeline Error',\n      color: embedColor,\n      timestamp: timestamp,\n      fields: [\n        {\n          name: 'Repository',\n          value: String(repo_name),\n          inline: true\n        },\n        {\n          name: 'User ID',\n          value: String(user_id),\n          inline: true\n        },\n        {\n          name: 'HTTP Status',\n          value: String(statusCode),\n          inline: true\n        },\n        {\n          name: 'Error Detail',\n          value: String(errorDetail),\n          inline: false\n        }\n      ],\n      footer: {\n        text: 'Resume Auto-Updater • Day 6 Automation Pipeline'\n      }\n    }\n  ],\n  text: `■ Resume Auto-Updater Pipeline Error in ${repo_name}: ${errorDetail}`,\n  attachments: [\n    {\n      color: '#E02424',\n      title: '■ Resume Auto-Updater Pipeline Error',\n      fields: [\n        { title: 'Repository', value: String(repo_name), short: true },\n        { title: 'User ID', value: String(user_id), short: true },\n        { title: 'HTTP Status', value: String(statusCode), short: true },\n        { title: 'Error Detail', value: String(errorDetail), short: false }\n      ],\n      ts: Math.floor(Date.now() / 1000)\n    }\n  ]\n};\n\nreturn [{ json: payload }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -704,
-        112
+        0,
+        192
       ],
-      "id": "bd496265-2fe9-4074-95ff-ad23635c5576",
+      "id": "e6fd912b-7e42-46ae-afc6-600ccce4b2c1",
       "name": "Format Error Embed"
     },
     {
@@ -217,24 +218,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -512,
-        112
+        192,
+        192
       ],
-      "id": "6101ccc0-4328-4e87-ac29-3b0515a2f779",
+      "id": "a42b9986-4523-4bdc-aa98-450a552b7f2c",
       "name": "Send Alert to Team Channel",
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const commitData = $('Code in JavaScript')?.first()?.json || {};\nconst timestamp = new Date().toISOString();\nconst repo = String(commitData.repo_name || 'resume-auto-updater');\nconst userId = String(commitData.user_id || 'unknown');\nconst message = String(commitData.commit_message || '');\nreturn [{\n  json: {\n    content: 'Pending review queue: new AI bullets after git push',\n    embeds: [{\n      title: 'Resume Auto-Updater \u2014 pending suggestions',\n      color: 2263842,\n      timestamp,\n      fields: [\n        { name: 'Repository', value: repo, inline: true },\n        { name: 'User ID', value: userId, inline: true },\n        { name: 'Commit', value: message.slice(0, 180) || '(none)', inline: false },\n        { name: 'Next step', value: 'Open React review queue: Accept / Edit / Dismiss', inline: false }\n      ],\n      footer: { text: 'Day 13 \u2014 human-in-the-loop notification' }\n    }]\n  }\n}];"
+        "jsCode": "const commitData = $('Code in JavaScript')?.first()?.json || {};\nconst timestamp = new Date().toISOString();\nconst repo = String(commitData.repo_name || 'resume-auto-updater');\nconst userId = String(commitData.user_id || 'unknown');\nconst message = String(commitData.commit_message || '');\nreturn [{\n  json: {\n    content: 'Pending review queue: new AI bullets after git push',\n    embeds: [{\n      title: 'Resume Auto-Updater — pending suggestions',\n      color: 2263842,\n      timestamp,\n      fields: [\n        { name: 'Repository', value: repo, inline: true },\n        { name: 'User ID', value: userId, inline: true },\n        { name: 'Commit', value: message.slice(0, 180) || '(none)', inline: false },\n        { name: 'Next step', value: 'Open React review queue: Accept / Edit / Dismiss', inline: false }\n      ],\n      footer: { text: 'Day 13 — human-in-the-loop notification' }\n    }]\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -320,
-        -64
+        384,
+        16
       ],
-      "id": "d13-format-pending-notify",
+      "id": "d08e6d32-7ffd-47a8-8d86-6704394e5344",
       "name": "Format Pending Review Notification"
     },
     {
@@ -249,10 +250,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -128,
-        -64
+        576,
+        16
       ],
-      "id": "d13-send-pending-notify",
+      "id": "88866d55-3d19-41a1-a43c-b57595082c9d",
       "name": "Notify Review Queue",
       "onError": "continueRegularOutput"
     }
@@ -383,7 +384,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1e13a282-44d5-4c5c-af8a-fb42b52062dc",
+  "versionId": "5382dbad-3300-46e0-a40a-b4a82e025f18",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1597dbc3c22ad8ad441026720d97a34085eb7fd36221b523ee610e9499d055f1"
