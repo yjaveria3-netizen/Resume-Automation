@@ -144,3 +144,6 @@ def compute_ats_score(docx_path: str, target_keywords: list = None) -> dict:
         },
         "suggestions": suggestions if suggestions else ["Great job! Your resume demonstrates strong action verbs, technical terms, and metrics."]
     }
+
+
+from services.jd_matcher import compute_jd_match_score
