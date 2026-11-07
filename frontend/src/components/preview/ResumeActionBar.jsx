@@ -49,13 +49,29 @@ export default function ResumeActionBar({
       }
     }
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
     setIsDownloading(true);
     if (onDownload) {
       onDownload(format);
+    } else {
+      // Native browser download without opening blank tabs
+      const content = `Resume Auto-Updater Document Export (${format.toUpperCase()})\nGenerated at: ${new Date().toLocaleString()}`;
+      const mimeType =
+        format === 'docx'
+          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          : 'application/pdf';
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Resume.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
     setTimeout(() => setIsDownloading(false), 1200);
   };
@@ -200,53 +216,64 @@ export default function ResumeActionBar({
             </span>
           </button>
 
-          {/* Copy Shareable Link Button */}
-          <button
-            type="button"
-            onClick={handleCopy}
-            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
-              copied
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                : 'bg-khaki-light text-olive-wood hover:bg-khaki/30 border-khaki/50'
-            }`}
-            title="Copy shareable resume link"
-          >
-            {copied ? (
-              <>
-                <svg
-                  className="w-3.5 h-3.5 text-emerald-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 13l4 4L19 7"
-                  />
+          {/* Copy Shareable Link Button with Animated Green 'Copied!' Tooltip */}
+          <div className="relative inline-block">
+            {copied && (
+              <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-bold rounded-lg shadow-md flex items-center gap-1 animate-fade-in z-50 whitespace-nowrap">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Link Copied!</span>
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-3.5 h-3.5 text-olive-wood"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
-                <span className="hidden sm:inline">Copy Link</span>
-              </>
+                <span>Copied!</span>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-emerald-600" />
+              </div>
             )}
-          </button>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                copied
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : 'bg-khaki-light text-olive-wood hover:bg-khaki/30 border-khaki/50'
+              }`}
+              title="Copy shareable resume link"
+            >
+              {copied ? (
+                <>
+                  <svg
+                    className="w-3.5 h-3.5 text-emerald-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>Link Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-3.5 h-3.5 text-olive-wood"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span className="hidden sm:inline">Copy Link</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {/* Primary Download Button */}
           <button
