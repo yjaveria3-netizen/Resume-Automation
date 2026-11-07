@@ -85,3 +85,42 @@ def insert_project_to_resume(
     # 7. Save modified resume to output_path
     doc.save(output_path)
     return True
+
+
+def replace_project_in_docx(
+    doc_path: str,
+    output_path: str,
+    old_project_name: str,
+    new_project_title: str,
+    new_tech_stack: List[str],
+    new_bullet_point: str,
+) -> bool:
+    """Replaces an old project entry (and its adjacent bullet point) with a new project entry to protect 1-page budget."""
+    doc = docx.Document(doc_path)
+    old_idx = -1
+
+    for idx, p in enumerate(doc.paragraphs):
+        if old_project_name.lower() in p.text.lower():
+            old_idx = idx
+            break
+
+    if old_idx != -1:
+        # Check if the subsequent paragraph is a bullet point for this project
+        target_p = doc.paragraphs[old_idx]
+        tech_str = ", ".join(new_tech_stack) if new_tech_stack else ""
+        header_text = f"{new_project_title} | {tech_str}" if tech_str else new_project_title
+        
+        target_p.text = header_text
+        if target_p.runs:
+            target_p.runs[0].bold = True
+
+        if old_idx + 1 < len(doc.paragraphs):
+            next_p = doc.paragraphs[old_idx + 1]
+            if "bullet" in (next_p.style.name if next_p.style else "").lower() or next_p.text.strip().startswith(("•", "-", "*")):
+                clean_bullet = new_bullet_point.lstrip("-*• ").strip()
+                next_p.text = f"• {clean_bullet}"
+        doc.save(output_path)
+        return True
+
+    # Fallback to standard insertion if old project is not located
+    return insert_project_to_resume(doc_path, output_path, new_project_title, new_tech_stack, new_bullet_point)

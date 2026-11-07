@@ -29,6 +29,7 @@ from app.routers.auth import router as auth_router
 from app.routers.github_auth import router as github_auth_router
 from app.routers.projects import router as projects_router
 from app.routers.resumes import router as resumes_router
+from app.routers.suggestions import router as suggestions_router
 from app.schemas.pipeline import RegenerationResponse
 from app.services.pipeline import run_resume_regeneration_pipeline
 
@@ -65,6 +66,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(github_auth_router, prefix="/auth/github", tags=["github_auth"])
 app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(resumes_router, prefix="/resumes", tags=["resumes"])
+app.include_router(suggestions_router, prefix="/suggestions", tags=["suggestions"])
 
 
 # Automatic Background Keep-Alive Self-Ping Task

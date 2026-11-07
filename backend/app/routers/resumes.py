@@ -2,7 +2,8 @@ import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
+import docx
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -14,11 +15,14 @@ from app.middleware.auth import require_resume_owner
 from app.models.user import User
 from app.models.resume import Resume
 from app.models.resume_version import ResumeVersion
+from app.models.job_description import JobDescription
 from app.schemas.resume import ResumeResponse
 from app.schemas.pipeline import RegenerationResponse
 from app.schemas.resume_version import VersionResponse
+from app.schemas.suggestions import MatchJdRequest, MatchJdResponse
 from app.services.storage import save_resume_file
 from app.services.pipeline import run_resume_regeneration_pipeline
+from services.jd_matcher import compute_jd_match_score
 
 router = APIRouter()
 
@@ -51,12 +55,12 @@ async def upload_resume(
     return resume
 
 
-@router.get("/current", response_model=ResumeResponse)
+@router.get("/current")
 async def get_current_resume(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Retrieves metadata for the user's latest uploaded resume."""
+    """Retrieves metadata for the user's latest uploaded resume with estimated line budget metrics."""
     latest_resume = (
         db.query(Resume)
         .filter(Resume.user_id == current_user.id)
@@ -70,7 +74,27 @@ async def get_current_resume(
             detail="No resume uploaded yet for current user.",
         )
 
-    return latest_resume
+    # Estimate line budget
+    lines_count = 0
+    if Path(latest_resume.file_path).exists():
+        try:
+            doc = docx.Document(latest_resume.file_path)
+            lines_count = sum(max(1, len(p.text) // 80) for p in doc.paragraphs if p.text.strip())
+        except Exception:
+            lines_count = 25
+
+    # 1-page resume safe boundary is typically ~38-42 lines
+    is_one_page_safe = lines_count <= 40
+
+    return {
+        "id": latest_resume.id,
+        "user_id": latest_resume.user_id,
+        "original_filename": latest_resume.original_filename,
+        "file_path": latest_resume.file_path,
+        "uploaded_at": latest_resume.uploaded_at,
+        "lines_count": lines_count,
+        "is_one_page_safe": is_one_page_safe,
+    }
 
 
 @router.get("/{resume_id}/versions", response_model=List[VersionResponse])
@@ -104,6 +128,38 @@ async def get_resume_versions(
         )
 
     return response_list
+
+
+@router.post("/match-jd", response_model=MatchJdResponse)
+async def match_job_description(
+    payload: MatchJdRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Day 12 Job Matcher: Compares active resume with target JD, computes keyword match scores, and stores result."""
+    resume = require_resume_owner(payload.resume_id, current_user, db)
+
+    match_result = compute_jd_match_score(resume.file_path, payload.job_description)
+
+    # Store or update in job_descriptions table
+    jd_record = JobDescription(
+        user_id=current_user.id,
+        resume_id=resume.id,
+        jd_text=payload.job_description,
+        match_score=match_result["match_score"],
+        matched_keywords=match_result["matched_keywords"],
+        missing_keywords=match_result["missing_keywords"],
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(jd_record)
+    db.commit()
+
+    return MatchJdResponse(
+        match_score=match_result["match_score"],
+        matched_keywords=match_result["matched_keywords"],
+        missing_keywords=match_result["missing_keywords"],
+        recommendations=match_result["recommendations"],
+    )
 
 
 @router.post("/regenerate", response_model=RegenerationResponse)
