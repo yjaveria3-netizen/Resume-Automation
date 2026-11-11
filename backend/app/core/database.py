@@ -5,6 +5,8 @@ from app.core.config import settings
 raw_url = (settings.DATABASE_URL or "").strip()
 
 if not raw_url:
+    if settings.ENV == "production":
+        raise RuntimeError("DATABASE_URL must be configured when ENV=production")
     database_url = "sqlite:///./resume_auto_updater.db"
 elif raw_url.startswith("postgres://"):
     database_url = raw_url.replace("postgres://", "postgresql://", 1)
@@ -17,7 +19,7 @@ else:
 
 
 def create_db_engine(url: str):
-    """Creates SQLAlchemy engine with optimized connection pooling (pool_size=10, max_overflow=20, pool_recycle=1800, pool_pre_ping=True)."""
+    """Creates SQLAlchemy engine with optimized connection pooling."""
     if url.startswith("sqlite"):
         return create_engine(
             url,
@@ -34,13 +36,21 @@ def create_db_engine(url: str):
     )
 
 
-try:
-    engine = create_db_engine(database_url)
-    with engine.connect() as conn:
-        pass
-except Exception:
-    database_url = "sqlite:///./resume_auto_updater.db"
-    engine = create_db_engine(database_url)
+if settings.ENV == "production":
+    try:
+        engine = create_db_engine(database_url)
+        with engine.connect() as conn:
+            pass
+    except Exception as exc:
+        raise RuntimeError(f"Database connection failed in production: {exc}") from exc
+else:
+    try:
+        engine = create_db_engine(database_url)
+        with engine.connect() as conn:
+            pass
+    except Exception:
+        database_url = "sqlite:///./resume_auto_updater.db"
+        engine = create_db_engine(database_url)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

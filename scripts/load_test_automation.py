@@ -35,7 +35,7 @@ DEFAULT_WEBHOOK_URL = os.getenv(
     "N8N_WEBHOOK_URL",
     "http://127.0.0.1:5678/webhook/github-push",
 )
-DEFAULT_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "resume001122--")
+DEFAULT_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")
 DEFAULT_USER_ID = os.getenv("DEFAULT_USER_ID", "fa9690b9-58e0-49a8-8593-8973c72be3b4")
 
 

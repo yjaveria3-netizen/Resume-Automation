@@ -13,6 +13,8 @@ class ProjectResponse(BaseModel):
     language: Optional[str] = None
     tech_stack: Optional[Any] = None
     stars: int = 0
+    forks_count: int = 0
+    default_branch: str = "main"
     rank_score: float = 0.0
     pushed_at: Optional[datetime] = None
     fetched_at: datetime

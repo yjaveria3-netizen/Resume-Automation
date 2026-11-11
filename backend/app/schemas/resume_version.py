@@ -7,7 +7,6 @@ class VersionResponse(BaseModel):
     id: UUID
     resume_id: UUID
     version_number: int
-    file_path: str
     ats_score: int
     created_at: datetime
     download_url: str

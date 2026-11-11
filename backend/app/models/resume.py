@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime, Text, UUID, ForeignKey
+from sqlalchemy import Column, String, DateTime, Text, Integer, UUID, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -12,6 +12,8 @@ class Resume(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     original_filename = Column(String, nullable=False)
     file_path = Column(Text, nullable=False)
+    ats_score = Column(Integer, default=0, nullable=True)
+    line_budget = Column(Integer, default=0, nullable=True)
     uploaded_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -19,3 +21,7 @@ class Resume(Base):
     )
 
     user = relationship("User", backref="resumes")
+
+    @property
+    def download_url(self) -> str:
+        return f"/resumes/download/{self.id}"

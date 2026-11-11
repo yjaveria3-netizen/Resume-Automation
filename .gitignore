@@ -14,7 +14,13 @@ venv/
 # Database & Storage
 *.db
 *.db.bak
+*.sqlite
+*.sqlite3
 backend/storage/
+backend/uploads/
+uploads/
+*.docx
+!docs/*.docx
 
 # OS
 .DS_Store

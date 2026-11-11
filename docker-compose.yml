@@ -1,16 +1,47 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:16-alpine
     container_name: resume-auto-updater-db
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: resume
-      POSTGRES_PASSWORD: resume
-      POSTGRES_DB: resume_auto_updater
+      POSTGRES_USER: ${POSTGRES_USER:-resume}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-resume_secure_pw_123}
+      POSTGRES_DB: ${POSTGRES_DB:-resume_auto_updater}
     volumes:
       - resume_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-resume} -d ${POSTGRES_DB:-resume_auto_updater}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: resume-auto-updater-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-resume}:${POSTGRES_PASSWORD:-resume_secure_pw_123}@postgres:5432/${POSTGRES_DB:-resume_auto_updater}
+      STORAGE_DIR: /app/storage
+    volumes:
+      - resume_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   resume_pg_data:
+  resume_storage:

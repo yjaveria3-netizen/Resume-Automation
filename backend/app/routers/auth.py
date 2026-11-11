@@ -11,7 +11,8 @@ router = APIRouter()
 @router.post("/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def signup(payload: SignupRequest, db: Session = Depends(get_db)):
     """Register a new user, return JWT access token and user object."""
-    existing_user = db.query(User).filter(User.email == payload.email).first()
+    clean_email = payload.email.strip().lower()
+    existing_user = db.query(User).filter(User.email == clean_email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -20,7 +21,7 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
 
     hashed_pwd = hash_password(payload.password)
     user = User(
-        email=payload.email,
+        email=clean_email,
         password_hash=hashed_pwd,
     )
     db.add(user)
@@ -39,7 +40,8 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
 @router.post("/login", response_model=AuthResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     """Authenticate user with email/password, return JWT access token."""
-    user = db.query(User).filter(User.email == payload.email).first()
+    clean_email = payload.email.strip().lower()
+    user = db.query(User).filter(User.email == clean_email).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

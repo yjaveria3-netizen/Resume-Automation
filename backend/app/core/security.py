@@ -5,23 +5,30 @@ from jose import jwt
 from app.core.config import settings
 
 # JWT configuration
-JWT_SECRET = settings.JWT_SECRET or "dev_secret_key_change_in_production"
-JWT_ALGORITHM = "HS256"
+JWT_SECRET = settings.JWT_SECRET
+JWT_ALGORITHM = settings.JWT_ALGORITHM
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 
 
 def hash_password(password: str) -> str:
-    """Hash password using bcrypt."""
-    pwd_bytes = password.encode("utf-8")[:72]
+    """Hash password using bcrypt. Rejects passwords longer than 72 bytes."""
+    pwd_bytes = password.encode("utf-8")
+    if len(pwd_bytes) > 72:
+        raise ValueError("Password cannot exceed 72 bytes")
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against bcrypt hash."""
-    pwd_bytes = plain_password.encode("utf-8")[:72]
+    """Verify password against bcrypt hash. Does not silently truncate long passwords."""
+    pwd_bytes = plain_password.encode("utf-8")
+    if len(pwd_bytes) > 72:
+        return False
     hash_bytes = hashed_password.encode("utf-8")
-    return bcrypt.checkpw(pwd_bytes, hash_bytes)
+    try:
+        return bcrypt.checkpw(pwd_bytes, hash_bytes)
+    except Exception:
+        return False
 
 
 def create_access_token(

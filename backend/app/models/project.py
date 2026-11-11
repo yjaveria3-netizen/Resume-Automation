@@ -16,6 +16,8 @@ class Project(Base):
     language = Column(String, nullable=True)
     tech_stack = Column(JSON, nullable=True)
     stars = Column(Integer, default=0)
+    forks_count = Column(Integer, default=0, nullable=False)
+    default_branch = Column(String, default="main", nullable=False)
     rank_score = Column(Float, default=0.0)
     pushed_at = Column(DateTime(timezone=True), nullable=True)
     fetched_at = Column(

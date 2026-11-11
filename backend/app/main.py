@@ -1,9 +1,13 @@
 import os
 import sys
+import time
 import shutil
 import asyncio
 import logging
+import psutil
 from datetime import datetime, timezone
+
+APP_START_TIME = time.time()
 from pathlib import Path
 from typing import Optional
 
@@ -22,14 +26,16 @@ import httpx
 
 from app.core.config import settings
 from app.core.database import engine, Base, get_db
-from app.core.dependencies import get_current_user, JWT_SECRET, JWT_ALGORITHM
+import hmac
+from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.automation_log import AutomationLog
 from app.routers.auth import router as auth_router
 from app.routers.github_auth import router as github_auth_router
 from app.routers.projects import router as projects_router
-from app.routers.resumes import router as resumes_router
+from app.routers.resumes import router as resumes_router, handle_regeneration_request
 from app.routers.suggestions import router as suggestions_router
+from app.routers.webhooks import router as webhooks_router
 from app.schemas.pipeline import RegenerationResponse
 from app.services.pipeline import run_resume_regeneration_pipeline
 
@@ -39,8 +45,9 @@ logger = logging.getLogger("keep_alive")
 storage_path = Path(settings.STORAGE_DIR)
 storage_path.mkdir(parents=True, exist_ok=True)
 
-# Auto-create DB tables on startup (users, github_accounts, projects, resumes, resume_versions)
-Base.metadata.create_all(bind=engine)
+# Auto-create DB tables on startup in development/test (in production migrations are used)
+if settings.ENV != "production":
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -53,6 +60,11 @@ allowed_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http:
 if settings.FRONTEND_URL and settings.FRONTEND_URL not in allowed_origins:
     allowed_origins.append(settings.FRONTEND_URL)
 
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.logging import StructuredLoggingMiddleware
+
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(StructuredLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins if allowed_origins else ["*"],
@@ -67,6 +79,7 @@ app.include_router(github_auth_router, prefix="/auth/github", tags=["github_auth
 app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(resumes_router, prefix="/resumes", tags=["resumes"])
 app.include_router(suggestions_router, prefix="/suggestions", tags=["suggestions"])
+app.include_router(webhooks_router, prefix="/webhooks", tags=["webhooks"])
 
 
 # Automatic Background Keep-Alive Self-Ping Task
@@ -112,86 +125,12 @@ async def regenerate_resume_alias(
     """Master pipeline endpoint alias POST /regenerate-resume.
     Supports JWT Bearer token authentication or Service Secret (for n8n webhook automation).
     """
-    auth_header = request.headers.get("Authorization", "")
-    service_secret = request.headers.get("X-Service-Secret", "")
-
-    body_data = {}
-    try:
-        body_data = await request.json()
-    except Exception:
-        pass
-
-    target_user = None
-    valid_secrets = {"resume001122--", JWT_SECRET, "dev_secret_key_change_in_production"}
-    bearer_token = auth_header.replace("Bearer ", "").strip() if auth_header.startswith("Bearer ") else ""
-
-    if service_secret in valid_secrets or bearer_token in valid_secrets:
-        user_id_cand = body_data.get("user_id")
-        if user_id_cand:
-            try:
-                from uuid import UUID
-                target_user = db.query(User).filter(User.id == UUID(str(user_id_cand))).first()
-            except Exception:
-                pass
-        if not target_user:
-            target_user = db.query(User).first()
-    else:
-        if not bearer_token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Missing authentication credentials (JWT Bearer token or service secret required)",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        try:
-            from uuid import UUID
-            payload = jwt.decode(bearer_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-            user_id_str: str = payload.get("sub")
-            if not user_id_str:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token payload: missing subject claim",
-                )
-            target_user = db.query(User).filter(User.id == UUID(user_id_str)).first()
-        except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            ) from exc
-
-    if not target_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found for resume regeneration",
-        )
-
-    repo_name = body_data.get("repo_name", "resume-auto-updater")
-    try:
-        result = run_resume_regeneration_pipeline(str(target_user.id), db)
-        log_entry = AutomationLog(
-            repo_name=repo_name,
-            user_id=target_user.id,
-            status="SUCCESS",
-            error_message=None,
-        )
-        db.add(log_entry)
-        db.commit()
-        return result
-    except Exception as e:
-        log_entry = AutomationLog(
-            repo_name=repo_name,
-            user_id=target_user.id,
-            status="FAILED",
-            error_message=str(e),
-        )
-        db.add(log_entry)
-        db.commit()
-        raise e
+    return await handle_regeneration_request(request, db)
 
 
 @app.get("/health", tags=["health"])
 def health_check(db: Session = Depends(get_db)):
-    """Production health check testing DB connectivity SELECT 1, storage directory availability, and service status."""
+    """Production health check testing DB connectivity SELECT 1, psutil memory usage, uptime, and storage status."""
     db_status = "disconnected"
     try:
         db.execute(text("SELECT 1"))
@@ -207,13 +146,22 @@ def health_check(db: Session = Depends(get_db)):
     except Exception:
         pass
 
+    try:
+        process = psutil.Process()
+        memory_mb = round(process.memory_info().rss / (1024 * 1024), 2)
+    except Exception:
+        memory_mb = 0.0
+
+    uptime_seconds = int(time.time() - APP_START_TIME)
+
     return {
         "status": "healthy" if db_status == "connected" else "degraded",
         "database": db_status,
+        "memory_mb": memory_mb,
+        "uptime_seconds": uptime_seconds,
         "storage": {
             "available": storage_available,
             "free_disk_mb": free_disk_mb,
-            "path": str(storage_path.resolve()),
         },
         "version": "1.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),

@@ -4,59 +4,94 @@ from fastapi import HTTPException, status
 
 
 async def fetch_user_repos(access_token: str) -> List[Dict[str, Any]]:
-    """Fetches user repositories from GitHub API using the user's OAuth access token."""
-    url = "https://api.github.com/user/repos?sort=pushed&per_page=50"
+    """Fetches user repositories from GitHub API using OAuth access token.
+    Follows Link header pagination (up to 5 pages x 100 repos/page), timeout=10s.
+    Distinguishes 403 rate limit from 403 forbidden. Returns forks_count and default_branch.
+    """
+    url = "https://api.github.com/user/repos?sort=pushed&per_page=100"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "Resume-Auto-Updater",
     }
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers)
-        except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to communicate with GitHub API: {str(exc)}",
-            ) from exc
+    extracted_repos: List[Dict[str, Any]] = []
+    max_pages = 5
 
-    if response.status_code == 401:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired GitHub access token. Please reconnect your GitHub account.",
-        )
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for _ in range(max_pages):
+            try:
+                response = await client.get(url, headers=headers)
+            except httpx.TimeoutException as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                    detail="GitHub API repository fetch timed out after 10s",
+                ) from exc
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Failed to communicate with GitHub API: {str(exc)}",
+                ) from exc
 
-    if response.status_code == 403:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="GitHub API rate limit exceeded or access forbidden.",
-        )
+            if response.status_code == 401:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired GitHub access token. Please reconnect your GitHub account.",
+                )
 
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"GitHub API returned error code {response.status_code}: {response.text}",
-        )
+            if response.status_code == 403:
+                rate_remaining = response.headers.get("X-RateLimit-Remaining", "").strip()
+                rate_reset = response.headers.get("X-RateLimit-Reset", "").strip()
+                if rate_remaining == "0":
+                    raise HTTPException(
+                        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                        detail=f"GitHub API rate limit exceeded. Reset time: {rate_reset}",
+                    )
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="GitHub API access forbidden.",
+                )
 
-    raw_repos = response.json()
-    extracted_repos = []
+            if response.status_code == 429:
+                rate_reset = response.headers.get("X-RateLimit-Reset", "").strip()
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=f"GitHub API rate limit exceeded. Reset time: {rate_reset}",
+                )
 
-    for repo in raw_repos:
-        extracted_repos.append({
-            "id": repo.get("id"),
-            "name": repo.get("name", ""),
-            "full_name": repo.get("full_name", ""),
-            "description": repo.get("description"),
-            "html_url": repo.get("html_url", ""),
-            "stargazers_count": repo.get("stargazers_count", 0),
-            "language": repo.get("language"),
-            "topics": repo.get("topics", []) or [],
-            "fork": repo.get("fork", False),
-            "pushed_at": repo.get("pushed_at"),
-            "created_at": repo.get("created_at"),
-            "updated_at": repo.get("updated_at"),
-        })
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"GitHub API returned error code {response.status_code}: {response.text}",
+                )
+
+            raw_repos = response.json()
+            if not isinstance(raw_repos, list):
+                break
+
+            for repo in raw_repos:
+                extracted_repos.append({
+                    "id": repo.get("id"),
+                    "name": repo.get("name", ""),
+                    "full_name": repo.get("full_name", ""),
+                    "description": repo.get("description"),
+                    "html_url": repo.get("html_url", ""),
+                    "stargazers_count": repo.get("stargazers_count", 0),
+                    "forks_count": repo.get("forks_count", 0),
+                    "default_branch": repo.get("default_branch", "main"),
+                    "language": repo.get("language"),
+                    "topics": repo.get("topics", []) or [],
+                    "fork": repo.get("fork", False),
+                    "pushed_at": repo.get("pushed_at"),
+                    "created_at": repo.get("created_at"),
+                    "updated_at": repo.get("updated_at"),
+                })
+
+            # Check next link in pagination headers
+            next_link = response.links.get("next", {}).get("url")
+            if not next_link:
+                break
+            url = next_link
 
     return extracted_repos
 
@@ -73,7 +108,7 @@ async def fetch_commit_diff_summary(owner: str, repo: str, sha: str, access_toke
     if access_token:
         headers["Authorization"] = f"Bearer {access_token}"
 
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         try:
             response = await client.get(url, headers=headers)
         except Exception as exc:
@@ -83,8 +118,9 @@ async def fetch_commit_diff_summary(owner: str, repo: str, sha: str, access_toke
             ) from exc
 
     if response.status_code != 200:
-        # Fallback/stub structure if commit is unreachable or token is invalid
         return {
+            "commit_sha": sha,
+            "commit_message": f"Could not fetch commit {sha}: {response.status_code}",
             "total_files_changed": 0,
             "additions": 0,
             "deletions": 0,
@@ -95,7 +131,7 @@ async def fetch_commit_diff_summary(owner: str, repo: str, sha: str, access_toke
 
     data = response.json()
     raw_files = data.get("files", [])
-    
+
     ignored_patterns = (
         "package-lock.json",
         "poetry.lock",

@@ -17,7 +17,7 @@ In real life, several teammates (or CI jobs) can push at the same time. The webh
 | Payload | unique GitHub-style JSON (unique commit SHA each time) |
 | Branch | `refs/heads/main` so the Filter node lets them through |
 | Auth header | `X-Hub-Signature-256` HMAC-SHA256 of the raw body |
-| Secret | `GITHUB_WEBHOOK_SECRET` or default `resume001122--` |
+| Secret | `GITHUB_WEBHOOK_SECRET` or from environment |
 | Success | every response is HTTP 200 |
 | Metrics | min / max / avg latency, throughput (req/s), error rate |
 

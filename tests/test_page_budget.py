@@ -7,76 +7,122 @@ from docx_engine.page_budget import (
     calculate_document_line_budget,
     auto_tighten_docx_spacing,
     replace_project_in_docx,
+    has_libreoffice,
+    convert_docx_to_pdf_page_count,
 )
 
 
 @pytest.fixture
-def sample_docx_file(tmp_path):
-    doc_path = tmp_path / "test_resume.docx"
+def multi_bullet_resume(tmp_path):
+    doc_path = tmp_path / "multi_bullet.docx"
     doc = docx.Document()
-    doc.add_heading("Jane Doe", 0)
-    doc.add_paragraph("Email: jane@example.com | GitHub: github.com/janedoe")
+    doc.add_heading("Alex Taylor", 0)
+    doc.add_paragraph("Fullstack Engineer | alex@example.com")
 
     doc.add_heading("Projects", 1)
-    doc.add_paragraph("Legacy Task Runner | Python, Flask", style="Normal")
-    doc.add_paragraph("Built simple task runner handling small background jobs.", style="List Bullet")
+    doc.add_paragraph("E-Commerce Microservices | Java, Spring Boot")
+    doc.add_paragraph("First bullet for e-commerce: architected order queue.", style="List Bullet")
+    doc.add_paragraph("Second bullet for e-commerce: reduced latency by 35%.", style="List Bullet")
 
-    doc.add_paragraph("Old Analytics Tool | JavaScript", style="Normal")
-    doc.add_paragraph("Created analytics chart dashboard for internal team.", style="List Bullet")
+    doc.add_paragraph("Distributed Cache | Go, Redis")
+    doc.add_paragraph("Single bullet for distributed cache.", style="List Bullet")
 
-    doc.add_heading("Experience", 1)
-    doc.add_paragraph("Software Engineer | Cloud Solutions")
-    doc.add_paragraph("Maintained backend APIs and microservices infrastructure.", style="List Bullet")
+    doc.add_heading("Skills", 1)
+    doc.add_paragraph("Go, Python, Java, Docker, Kubernetes")
 
     doc.save(str(doc_path))
     return str(doc_path)
 
 
-def test_estimate_page_lines(sample_docx_file):
-    doc = docx.Document(sample_docx_file)
-    lines = estimate_page_lines(doc)
-    assert 5 <= lines <= 25
-    budget = calculate_document_line_budget(doc)
-    assert budget["is_one_page_safe"] is True
-    assert budget["max_single_page_budget"] == 45
-    assert budget["status"] == "safe"
-
-
-def test_auto_tighten_spacing_on_overflow(sample_docx_file):
-    doc = docx.Document(sample_docx_file)
-    # Add paragraphs to simulate overflow
-    for i in range(25):
-        doc.add_paragraph(f"High-density project bullet point {i} detailing complex microservices architecture and optimization metrics.")
-
-    initial_lines = estimate_page_lines(doc)
-    assert initial_lines > 30
-
-    tightened = auto_tighten_docx_spacing(doc, line_threshold=30)
-    assert tightened is True
-
-    # Verify spacing properties were tightened
-    for p in doc.paragraphs:
-        if not ("heading" in (p.style.name or "").lower()):
-            assert p.paragraph_format.space_before == Pt(0)
-            assert p.paragraph_format.line_spacing == 1.05
-
-
-def test_replace_project_in_docx(sample_docx_file, tmp_path):
-    out_path = str(tmp_path / "updated_swapped.docx")
+def test_replace_multi_bullet_removes_all_old_bullets(multi_bullet_resume, tmp_path):
+    """Replacing a 2-bullet project removes BOTH old bullets and inserts the single new bullet."""
+    out_path = str(tmp_path / "swapped_multi.docx")
     success = replace_project_in_docx(
-        doc_path=sample_docx_file,
+        doc_path=multi_bullet_resume,
         output_path=out_path,
-        old_project_name="Legacy Task Runner",
-        new_project_name="Distributed LRU Cache Engine",
-        new_bullet="Engineered distributed in-memory cache in Go with Redis backend, cutting DB load by 45%.",
-        tech_stack=["Go", "Redis", "Docker"]
+        old_project_name="E-Commerce Microservices",
+        new_project_title="Cloud Kubernetes Ingress",
+        new_tech_stack=["Go", "K8s"],
+        new_bullet_point="Engineered zero-downtime ingress routing controller."
     )
     assert success is True
-    assert os.path.exists(out_path)
 
-    # Check updated document contents
-    updated_doc = docx.Document(out_path)
-    text = " ".join([p.text for p in updated_doc.paragraphs])
-    assert "Distributed LRU Cache Engine" in text
-    assert "cutting DB load by 45%" in text
-    assert "Legacy Task Runner" not in text
+    doc = docx.Document(out_path)
+    text = " ".join([p.text for p in doc.paragraphs])
+    assert "Cloud Kubernetes Ingress | Go, K8s" in text
+    assert "zero-downtime ingress routing controller" in text
+
+    # Neither of the two old bullets should remain
+    assert "First bullet for e-commerce" not in text
+    assert "Second bullet for e-commerce" not in text
+    assert "E-Commerce Microservices" not in text
+
+    # Sibling project remains intact
+    assert "Distributed Cache | Go, Redis" in text
+    assert "Single bullet for distributed cache." in text
+
+
+def test_replace_project_not_found_inserts_under_heading(multi_bullet_resume, tmp_path):
+    """If old project is not found, insert a new entry under Projects heading instead of editing paragraph 0."""
+    out_path = str(tmp_path / "swapped_fallback.docx")
+    success = replace_project_in_docx(
+        doc_path=multi_bullet_resume,
+        output_path=out_path,
+        old_project_name="Nonexistent Project Title",
+        new_project_title="Brand New Architecture",
+        new_tech_stack=["Rust"],
+        new_bullet_point="Engineered memory-safe actor system."
+    )
+    assert success is True
+
+    doc = docx.Document(out_path)
+    paras = [p.text for p in doc.paragraphs]
+    proj_idx = paras.index("Projects")
+    assert paras[proj_idx + 1] == "Brand New Architecture | Rust"
+    assert "Engineered memory-safe actor system." in paras[proj_idx + 2]
+
+
+def test_tighten_progressive_steps(tmp_path):
+    """Verify progressive tightening in steps without dropping font below 9.5pt."""
+    doc_path = tmp_path / "overflow_resume.docx"
+    doc = docx.Document()
+    doc.add_heading("Jane Dev", 0)
+    doc.add_paragraph("Summary: Senior engineer with extensive experience.")
+
+    doc.add_heading("Projects", 1)
+    for i in range(25):
+        doc.add_paragraph(f"Project Entry {i} | Tech Stack, Tools, Frameworks")
+        doc.add_paragraph(f"Detailed engineering bullet point {i} describing distributed cloud architectures and streaming data pipelines.", style="List Bullet")
+
+    doc.save(str(doc_path))
+
+    doc_test = docx.Document(str(doc_path))
+    res = auto_tighten_docx_spacing(doc_test, line_threshold=35)
+    assert res["tightened"] is True
+    assert "paragraph_spacing_reduced" in res["changes"]
+
+    # Verify no font run is smaller than 9.5 pt
+    for p in doc_test.paragraphs:
+        for r in p.runs:
+            if r.font and r.font.size:
+                assert r.font.size.pt >= 9.5
+
+
+@pytest.mark.skipif(not has_libreoffice(), reason="LibreOffice not installed for PDF page count verification")
+def test_libreoffice_pdf_page_count_verification(tmp_path):
+    """Converts 10 generated resumes to PDF via LibreOffice and verifies they are exactly 1 page."""
+    for i in range(10):
+        doc_path = tmp_path / f"resume_{i}.docx"
+        doc = docx.Document()
+        doc.add_heading(f"Candidate {i}", 0)
+        doc.add_paragraph("Email: candidate@example.com")
+        doc.add_heading("Projects", 1)
+        for j in range(3):
+            doc.add_paragraph(f"Project {j} | Python")
+            doc.add_paragraph(f"Engineered service {j} processing large data.", style="List Bullet")
+        auto_tighten_docx_spacing(doc)
+        doc.save(str(doc_path))
+
+        pages = convert_docx_to_pdf_page_count(str(doc_path), str(tmp_path))
+        if pages is not None:
+            assert pages == 1

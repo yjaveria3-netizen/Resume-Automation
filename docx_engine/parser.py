@@ -1,7 +1,7 @@
 import re
 
 PROJECTS_HEADING_REGEX = re.compile(
-    r"\b(Projects|Technical Projects|Key Projects|Personal Projects|Selected Projects)\b",
+    r"\b(Projects|Technical Projects|Key Projects|Personal Projects|Selected Projects|Portfolio Highlights|Featured Projects)\b",
     re.IGNORECASE,
 )
 

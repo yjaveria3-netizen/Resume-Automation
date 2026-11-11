@@ -22,7 +22,7 @@ async def get_projects(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Fetches user's GitHub repos, ranks them, upserts top projects into DB, and returns sorted project list."""
+    """Fetches user's GitHub repos, cleans stale/deleted repos, ranks them, upserts top projects, returns sorted list."""
 
     # 1. Lookup GitHub account for authenticated user
     github_account = (
@@ -49,19 +49,27 @@ async def get_projects(
     # 3. Fetch user repositories from GitHub API
     raw_repos = await fetch_user_repos(access_token)
 
+    # 4. Remove stale projects (repos deleted from GitHub)
+    existing_user_projects = db.query(Project).filter(Project.user_id == current_user.id).all()
+    current_repo_names = {r["name"] for r in raw_repos} if raw_repos else set()
+
+    for old_proj in existing_user_projects:
+        if old_proj.github_repo_name not in current_repo_names:
+            db.delete(old_proj)
+    db.commit()
+
     if not raw_repos:
-        # Return empty list if user has no repositories
         return []
 
-    # 4. Rank repositories using algorithm
+    # 5. Rank repositories using ranking algorithm
     ranked_repos = rank_repositories(raw_repos)
 
-    # 5. Select top 10 ranked projects
+    # 6. Select top 10 ranked projects
     top_projects = ranked_repos[:10]
     saved_projects = []
     now = datetime.now(timezone.utc)
 
-    # 6. Upsert top projects into database
+    # 7. Upsert top projects into database
     for r in top_projects:
         repo_name = r["name"]
 
@@ -77,7 +85,6 @@ async def get_projects(
             except Exception:
                 pushed_at_dt = None
 
-        # Check existing project record in DB
         existing_proj = (
             db.query(Project)
             .filter(Project.user_id == current_user.id, Project.github_repo_name == repo_name)
@@ -90,6 +97,8 @@ async def get_projects(
             existing_proj.language = r.get("language")
             existing_proj.tech_stack = r.get("tech_stack")
             existing_proj.stars = r.get("stargazers_count", 0)
+            existing_proj.forks_count = r.get("forks_count", 0)
+            existing_proj.default_branch = r.get("default_branch", "main")
             existing_proj.rank_score = r.get("rank_score", 0.0)
             existing_proj.pushed_at = pushed_at_dt
             existing_proj.fetched_at = now
@@ -103,6 +112,8 @@ async def get_projects(
                 language=r.get("language"),
                 tech_stack=r.get("tech_stack"),
                 stars=r.get("stargazers_count", 0),
+                forks_count=r.get("forks_count", 0),
+                default_branch=r.get("default_branch", "main"),
                 rank_score=r.get("rank_score", 0.0),
                 pushed_at=pushed_at_dt,
                 fetched_at=now,
@@ -116,6 +127,5 @@ async def get_projects(
     for p in saved_projects:
         db.refresh(p)
 
-    # Sort saved projects descending by rank_score before returning
     saved_projects.sort(key=lambda p: p.rank_score, reverse=True)
     return saved_projects

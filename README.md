@@ -128,7 +128,7 @@ Import `workflows/n8n_production_workflow_v1.1.json` (or `n8n/workflows/n8n_full
 
 `http://<public-or-local-host>:5678/webhook/github-push`
 
-Use the same HMAC secret the Code node expects (`GITHUB_WEBHOOK_SECRET` / `resume001122--` in the current workflow).
+Use the same HMAC secret the Code node expects (`GITHUB_WEBHOOK_SECRET` / `GITHUB_WEBHOOK_SECRET` in the current workflow).
 
 ### Docker deployment notes
 

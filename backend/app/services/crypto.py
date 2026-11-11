@@ -1,22 +1,16 @@
-import base64
-import hashlib
 from cryptography.fernet import Fernet
 from app.core.config import settings
 
 
 def _get_fernet() -> Fernet:
-    """Get or derive a valid 32-byte URL-safe base64 Fernet key."""
+    """Get Fernet instance using settings.ENCRYPTION_KEY."""
     raw_key = (settings.ENCRYPTION_KEY or "").strip()
-    if raw_key:
-        try:
-            return Fernet(raw_key.encode("utf-8"))
-        except Exception:
-            derived = base64.urlsafe_b64encode(hashlib.sha256(raw_key.encode("utf-8")).digest())
-            return Fernet(derived)
-    else:
-        fallback_secret = settings.JWT_SECRET or "dev_fallback_encryption_secret_key_32bytes"
-        derived = base64.urlsafe_b64encode(hashlib.sha256(fallback_secret.encode("utf-8")).digest())
-        return Fernet(derived)
+    if not raw_key:
+        raise ValueError("ENCRYPTION_KEY is not configured")
+    try:
+        return Fernet(raw_key.encode("utf-8"))
+    except Exception as e:
+        raise ValueError(f"ENCRYPTION_KEY must be a valid 32-byte url-safe base64 Fernet key: {e}") from e
 
 
 def encrypt_token(plain_token: str) -> str:

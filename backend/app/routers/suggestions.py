@@ -22,7 +22,7 @@ from app.schemas.suggestions import (
 )
 from app.schemas.resume_version import VersionResponse
 from docx_engine.unified_updater import update_resume_with_project
-from docx_engine.modifier import replace_project_in_docx
+from docx_engine.page_budget import replace_project_in_docx
 from services.scoring import compute_ats_score
 
 router = APIRouter()
@@ -181,7 +181,6 @@ def accept_suggestion(
         id=new_version.id,
         resume_id=new_version.resume_id,
         version_number=new_version.version_number,
-        file_path=new_version.file_path,
         ats_score=new_version.ats_score,
         created_at=new_version.created_at,
         download_url=f"/resumes/download/{new_version.id}",
@@ -221,16 +220,6 @@ def swap_project_suggestion(
             detail="Designated project to archive was not found.",
         )
 
-    # Record in archived_projects table
-    archived = ArchivedProject(
-        user_id=current_user.id,
-        project_name=old_proj.github_repo_name,
-        tech_stack=old_proj.tech_stack,
-        bullet_point=f"Archived project: {old_proj.description or old_proj.github_repo_name}",
-        archived_at=datetime.now(timezone.utc),
-    )
-    db.add(archived)
-
     # Find active resume
     latest_resume = (
         db.query(Resume)
@@ -243,6 +232,44 @@ def swap_project_suggestion(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No uploaded resume found for swapping projects.",
         )
+
+    # Extract displaced bullet text from docx
+    import docx
+    from docx_engine.page_budget import auto_tighten_docx_spacing
+
+    displaced_bullet_text = ""
+    try:
+        doc = docx.Document(latest_resume.file_path)
+        target_found = False
+        for p in doc.paragraphs:
+            txt = p.text.strip()
+            if old_proj.github_repo_name.lower() in txt.lower():
+                target_found = True
+                continue
+            if target_found:
+                if (p.style and "bullet" in p.style.name.lower()) or txt.startswith(("-", "•", "*")):
+                    displaced_bullet_text = txt.lstrip("-•* \t")
+                    break
+                elif txt:
+                    displaced_bullet_text = txt
+                    break
+    except Exception:
+        pass
+
+    if not displaced_bullet_text:
+        displaced_bullet_text = old_proj.description or f"Archived project: {old_proj.github_repo_name}"
+
+    # Record in archived_projects table
+    archived = ArchivedProject(
+        user_id=current_user.id,
+        resume_id=latest_resume.id,
+        project_title=old_proj.github_repo_name,
+        project_name=old_proj.github_repo_name,
+        bullet_text=displaced_bullet_text,
+        bullet_point=displaced_bullet_text,
+        tech_stack=old_proj.tech_stack,
+        archived_at=datetime.now(timezone.utc),
+    )
 
     # Increment version
     latest_v = (
@@ -257,15 +284,23 @@ def swap_project_suggestion(
     versions_dir.mkdir(parents=True, exist_ok=True)
     out_file = str((versions_dir / f"Updated_Resume_v{next_v_num}_{uuid.uuid4().hex[:8]}.docx").resolve())
 
-    # Execute replacement in docx
+    # Execute canonical replacement in docx
     replace_project_in_docx(
         doc_path=latest_resume.file_path,
         output_path=out_file,
         old_project_name=old_proj.github_repo_name,
         new_project_title=sugg.repo_name,
-        new_tech_stack=[],
+        new_tech_stack=old_proj.tech_stack or [],
         new_bullet_point=sugg.proposed_bullet,
     )
+
+    # Auto-tighten spacing to preserve 1-page budget
+    try:
+        doc_out = docx.Document(out_file)
+        auto_tighten_docx_spacing(doc_out)
+        doc_out.save(out_file)
+    except Exception:
+        pass
 
     ats_data = compute_ats_score(out_file)
     ats_score = ats_data.get("score", 75)
@@ -277,20 +312,31 @@ def swap_project_suggestion(
         version_number=next_v_num,
         created_at=datetime.now(timezone.utc),
     )
-    db.add(new_version)
 
-    # Mark suggestion as accepted
-    sugg.status = "accepted"
-    sugg.updated_at = datetime.now(timezone.utc)
-
-    db.commit()
+    # Atomic DB transaction
+    try:
+        db.add(archived)
+        db.add(new_version)
+        sugg.status = "accepted"
+        sugg.updated_at = datetime.now(timezone.utc)
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        if Path(out_file).exists():
+            try:
+                Path(out_file).unlink()
+            except Exception:
+                pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to record project swap: {exc}",
+        ) from exc
     db.refresh(new_version)
 
     return VersionResponse(
         id=new_version.id,
         resume_id=new_version.resume_id,
         version_number=new_version.version_number,
-        file_path=new_version.file_path,
         ats_score=new_version.ats_score,
         created_at=new_version.created_at,
         download_url=f"/resumes/download/{new_version.id}",

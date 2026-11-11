@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime, Text, UUID
+from sqlalchemy import Column, String, DateTime, Text, Integer, UUID
 from app.core.database import Base
 
 
@@ -10,6 +10,7 @@ class AutomationLog(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     repo_name = Column(String, nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), nullable=True, index=True)
+    duration_ms = Column(Integer, default=0, nullable=True)
     status = Column(String, nullable=False)
     error_message = Column(Text, nullable=True)
     created_at = Column(
