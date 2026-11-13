@@ -53,31 +53,31 @@ Total Tests: ${totalCount} | Passed: ${passCount} | Failed: 0
 Overall QA Pass Rate: ${passPercentage}%
 ========================================================
 
-DAY 1: Design Tokens & Authentication
+MODULE 1: Design Tokens & Authentication
 [PASS] d1-tokens: Design Tokens & Theme Consistency (12ms)
 [PASS] d1-auth: Authentication Session & JWT Flow (45ms)
 
-DAY 2: UI & Empty States
+MODULE 2: UI & Empty States
 [PASS] d2-empty: Empty States & Upload Prompt Fallbacks (18ms)
 [PASS] d2-upload: DOCX Drag-and-Drop File Validator (32ms)
 
-DAY 3: Resume Preview & Action Toolbar
+MODULE 3: Resume Preview & Action Toolbar
 [PASS] d3-preview: US Letter Resume Layout & Sizing (28ms)
 [PASS] d3-toolbar: Resume Action Toolbar & Export Handlers (24ms)
 
-DAY 4: ATS Score Feedback System
+MODULE 4: ATS Score Feedback System
 [PASS] d4-ats-gauge: ATS Radial Score Gauge & Tier Badging (15ms)
 [PASS] d4-feedback: Actionable ATS Feedback Expanders & Filter Tabs (36ms)
 
-DAY 5: Multi-Step Regeneration Modal
+MODULE 5: Multi-Step Regeneration Modal
 [PASS] d5-modal: Multi-Step AI Regeneration Modal & Progress Sync (52ms)
 [PASS] d5-error: Regeneration Error Handling & Retry Logic (41ms)
 
-DAY 6: Version Control & Diff Viewer
+MODULE 6: Version Control & Diff Viewer
 [PASS] d6-history: Version History Timeline & Build Selection (22ms)
 [PASS] d6-diff: Resume Diff Viewer (Side-by-Side & Unified) (39ms)
 
-DAY 7: End-to-End Pipeline & Responsive Verification
+MODULE 7: End-to-End Pipeline & Responsive Verification
 [PASS] d7-e2e: End-to-End GitHub OAuth to DOCX Generation Pipeline (84ms)
 [PASS] d7-responsive: Mobile / Tablet / Desktop Viewport Scaling (63ms)
 
@@ -88,7 +88,7 @@ STATUS: ALL QA CRITERIA COMPLIANT & APPROVED FOR PRODUCTION
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `QA_Test_Report_Days_1-7_${Date.now()}.txt`;
+    link.download = `QA_Test_Report_Suite_${Date.now()}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -103,14 +103,14 @@ STATUS: ALL QA CRITERIA COMPLIANT & APPROVED FOR PRODUCTION
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-sage animate-ping" />
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-sage">
-              Day 7 • Automated QA Verification Suite
+              Automated QA Verification Suite
             </span>
           </div>
           <h3 className="text-xl font-extrabold text-olive-wood">
             QA Checklist & Test Automation Harness
           </h3>
           <p className="text-xs text-olive-wood/70 mt-0.5">
-            Real-time validation for all Days 1–7 frontend modules, ATS pipelines, and layout responsiveness.
+            Real-time validation for core frontend modules, ATS pipelines, and layout responsiveness.
           </p>
         </div>
 
@@ -181,7 +181,7 @@ STATUS: ALL QA CRITERIA COMPLIANT & APPROVED FOR PRODUCTION
         <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200 flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold text-olive-wood/60 uppercase tracking-wider">Test Suite Scope</span>
-            <div className="text-2xl font-extrabold text-olive-wood mt-0.5">Days 1–7</div>
+            <div className="text-2xl font-extrabold text-olive-wood mt-0.5">All Modules</div>
           </div>
           <div className="w-11 h-11 rounded-2xl bg-khaki text-olive-wood flex items-center justify-center font-bold text-xs">
             E2E
@@ -189,7 +189,7 @@ STATUS: ALL QA CRITERIA COMPLIANT & APPROVED FOR PRODUCTION
         </div>
       </div>
 
-      {/* Day Filter Tabs */}
+      {/* Module Filter Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
         {['all', '1', '2', '3', '4', '5', '6', '7'].map((day) => (
           <button
@@ -202,7 +202,7 @@ STATUS: ALL QA CRITERIA COMPLIANT & APPROVED FOR PRODUCTION
                 : 'bg-khaki-light/60 text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood border border-khaki/30'
             }`}
           >
-            {day === 'all' ? 'All Checkpoints (14)' : `Day ${day}`}
+            {day === 'all' ? 'All Checkpoints (14)' : `Module ${day}`}
           </button>
         ))}
       </div>
@@ -222,7 +222,7 @@ STATUS: ALL QA CRITERIA COMPLIANT & APPROVED FOR PRODUCTION
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs text-olive-wood">{test.name}</span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 border border-stone-200">
-                    Day {test.day}
+                    Module {test.day}
                   </span>
                 </div>
                 <span className="text-[11px] text-olive-wood/60 font-mono">

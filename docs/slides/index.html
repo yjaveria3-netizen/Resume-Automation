@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Auto-Updater — Enterprise Master Presentation Deck</title>
+  <style>
+    :root {
+      --olive-wood: #30362F;
+      --sage: #627264;
+      --sage-hover: #4e5c50;
+      --khaki-light: #FAF9F5;
+      --khaki-border: #E3DEC3;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --rose: #EF4444;
+      --card-bg: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--olive-wood);
+      color: var(--olive-wood);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Progress Bar */
+    #progress-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+    #progress-bar {
+      height: 100%;
+      background: var(--emerald);
+      width: 10%;
+      transition: width 0.3s ease;
+    }
+
+    /* Slide Deck Stage */
+    #deck-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    .slide {
+      background: var(--khaki-light);
+      width: 100%;
+      max-width: 1280px;
+      height: 720px;
+      border-radius: 28px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      padding: 48px 56px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.985); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Slide Header */
+    .slide-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--khaki-border);
+      padding-bottom: 20px;
+    }
+
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(98, 114, 100, 0.15);
+      color: var(--sage);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 6px;
+    }
+
+    .slide-title {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--olive-wood);
+      letter-spacing: -0.02em;
+    }
+
+    .slide-presenter {
+      text-align: right;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sage);
+      background: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--khaki-border);
+    }
+
+    /* Slide Body */
+    .slide-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 36px;
+      align-items: center;
+      padding: 24px 0;
+      overflow-y: auto;
+    }
+
+    .slide-body.full-width {
+      grid-template-columns: 1fr;
+    }
+
+    .content-box h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--olive-wood);
+      margin-bottom: 14px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 15px;
+      line-height: 1.5;
+      color: rgba(48, 54, 47, 0.9);
+      background: white;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--khaki-border);
+    }
+
+    .feature-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--sage);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Media Box */
+    .media-box {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--khaki-border);
+      padding: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .media-box img {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .media-caption {
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sage);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Metric Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+    }
+
+    .metric-card {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px solid var(--khaki-border);
+      text-align: center;
+    }
+
+    .metric-val {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--emerald);
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--olive-wood);
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: rgba(48, 54, 47, 0.6);
+      margin-top: 4px;
+    }
+
+    /* Slide Footer */
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--khaki-border);
+      padding-top: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--sage);
+    }
+
+    /* Speaker Notes Drawer */
+    #notes-drawer {
+      background: #1F241F;
+      color: #E2E8F0;
+      padding: 16px 24px;
+      font-size: 13px;
+      line-height: 1.6;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: none;
+    }
+
+    #notes-drawer.open {
+      display: block;
+    }
+
+    #notes-drawer strong {
+      color: #34D399;
+    }
+
+    /* Control Toolbar */
+    #toolbar {
+      background: rgba(30, 36, 30, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: var(--sage);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--sage-hover);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    #slide-indicator {
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <!-- Main Slide Deck Stage -->
+  <main id="deck-stage">
+
+    <!-- SLIDE 1 -->
+    <section class="slide active" data-slide="1" data-presenter="Person B (MC)" data-time="0:00 - 0:45" data-notes="Good afternoon everyone! As software engineers, we ship code every day, but our resumes remain frozen in time. Today we present Resume Auto-Updater Enterprise: Zero-touch continuous deployment for your career with strict human-in-the-loop governance and 1-page layout protection.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Enterprise Master Pitch · Slide 01</span>
+          <h1 class="slide-title">Resume Auto-Updater</h1>
+          <p style="font-size: 15px; color: var(--sage); font-weight: 700; margin-top: 4px;">
+            Continuous Deployment for Your Professional Career
+          </p>
+        </div>
+        <div class="slide-presenter">
+          <div>Speaker: <strong>Person B (MC)</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Act I (0:00 - 0:45)</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>The Vision: Ship Code. Sync Accomplishments.</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">1</span>
+              <div>
+                <strong>Zero Manual Word Editing:</strong> Translates background Git commits into quantified STAR resume bullets automatically.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">2</span>
+              <div>
+                <strong>Human-in-the-Loop Review:</strong> Nothing touches your master resume without candidate inspection and sign-off.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">3</span>
+              <div>
+                <strong>Strict 1-Page Layout Lock:</strong> Real-time line budgeting and Smart Swapping prevent disastrous 2-page spillover.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/01_landing_hero.png" alt="Platform Landing Hero">
+          <span class="media-caption">Production Landing Page & Value Proposition</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>5-Minute Grand Master Demo</span>
+        <span>Resume Auto-Updater v1.1</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 2 -->
+    <section class="slide" data-slide="2" data-presenter="Person B (MC)" data-time="0:20 - 0:45" data-notes="Why do traditional resumes fail? First, Resume Bloat — when projects pile up, resumes spill onto page 2, causing immediate recruiter discard. Second, Unchecked AI Tools hallucinate buzzwords directly into files. Third, developers write terse commits like 'wip' that raw parsers fail to understand.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">The Core Problem · Slide 02</span>
+          <h2 class="slide-title">The Dilemma: Bloat & Blind Automation</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speaker: <strong>Person B (MC)</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Act I Context</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>Why Existing Solutions Fail Engineers</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon" style="background: var(--rose);">!</span>
+              <div>
+                <strong>The 1-Page Rejection Trap:</strong> 80%+ of recruiters discard multi-page tech resumes. Unchecked additions cause page spills.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon" style="background: var(--amber);">!</span>
+              <div>
+                <strong>Hallucinatory Black-Box AI:</strong> Blind automated writers inject buzzwords without candidate editorial verification.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon" style="background: var(--olive-wood);">!</span>
+              <div>
+                <strong>The 'wip' Commit Reality:</strong> Developers write minimal commit messages. Systems must analyze Git diffs, not commit strings.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/09_page_budget_strictness.png" alt="Page Budget Strictness">
+          <span class="media-caption">1-Page Layout Strictness & Line Budget Enforcement</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>The Problem of Resume Bloat</span>
+        <span>Slide 2 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 3 -->
+    <section class="slide" data-slide="3" data-presenter="Person C (DevOps)" data-time="0:45 - 1:15" data-notes="Here is our end-to-end event-driven architecture. A developer commits code, GitHub dispatches an HMAC-authenticated webhook to n8n, which hands off to FastAPI. Our AST diff parser triggers Gemini with strict XYZ guardrails, landing in a pending review queue before python-docx OpenXML generation.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Architecture · Slide 03</span>
+          <h2 class="slide-title">Enterprise System Architecture</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speaker: <strong>Person C & E</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">System Topology</div>
+        </div>
+      </div>
+      <div class="slide-body full-width">
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 10px;">
+          <div class="metric-card" style="text-align: left;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--sage); margin-bottom: 8px;">1. INGESTION</div>
+            <strong style="font-size: 14px; color: var(--olive-wood);">GitHub Webhook</strong>
+            <p style="font-size: 12px; color: rgba(48,54,47,0.7); margin-top: 4px;">SHA-256 HMAC verification in 42ms via n8n automation engine.</p>
+          </div>
+          <div class="metric-card" style="text-align: left;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--sage); margin-bottom: 8px;">2. INTELLIGENCE</div>
+            <strong style="font-size: 14px; color: var(--olive-wood);">Gemini Diff AI</strong>
+            <p style="font-size: 12px; color: rgba(48,54,47,0.7); margin-top: 4px;">Analyzes raw code diff AST. Synthesizes Google X-Y-Z bullet points.</p>
+          </div>
+          <div class="metric-card" style="text-align: left;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--sage); margin-bottom: 8px;">3. GOVERNANCE</div>
+            <strong style="font-size: 14px; color: var(--olive-wood);">Review Queue</strong>
+            <p style="font-size: 12px; color: rgba(48,54,47,0.7); margin-top: 4px;">Quarantined in PostgreSQL table. Interactive side-by-side visual diff.</p>
+          </div>
+          <div class="metric-card" style="text-align: left;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--sage); margin-bottom: 8px;">4. 1-PAGE LOCK</div>
+            <strong style="font-size: 14px; color: var(--olive-wood);">Smart Swapping</strong>
+            <p style="font-size: 12px; color: rgba(48,54,47,0.7); margin-top: 4px;">Calculates vertical line budget (45 ceiling). Auto-archives older repos.</p>
+          </div>
+          <div class="metric-card" style="text-align: left;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--sage); margin-bottom: 8px;">5. DELIVERY</div>
+            <strong style="font-size: 14px; color: var(--olive-wood);">OpenXML Engine</strong>
+            <p style="font-size: 12px; color: rgba(48,54,47,0.7); margin-top: 4px;">python-docx builds output in 340ms. Fernet AES-256 token encryption.</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>End-to-End Event-Driven Pipeline</span>
+        <span>Slide 3 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 4 -->
+    <section class="slide" data-slide="4" data-presenter="Person E & C" data-time="0:45 - 1:45" data-notes="Watch Person E push a commit with a sparse message 'wip: add redis lock and telemetry'. Instead of relying on this vague string, our pipeline analyzes the code additions in Go and Python, passes AST modifications to Gemini, and generates an achievement bullet ready for review.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Live Demo Checkpoint · Slide 04</span>
+          <h2 class="slide-title">Act II: The Smart Automation Pipeline</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speakers: <strong>Person E & C</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Sparse Commit to Diff</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>Sparse Commit 'wip' Transformed into Rich Bullets</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Sparse Trigger:</strong> <code>git commit -am "wip: add redis lock and telemetry"</code> pushed to GitHub.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Diff Extraction:</strong> Backend extracts 142 modified lines across <code>cache.go</code> and <code>metrics.py</code>.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Google X-Y-Z Formula:</strong> <em>"Architected distributed Redis mutex locks and telemetry, reducing lock contention by 41%."</em>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/07_review_queue_pending.png" alt="Pending Review Queue">
+          <span class="media-caption">Review Queue: Quarantined Suggestion Ready for Inspection</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Zero-Touch Ingestion</span>
+        <span>Slide 4 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 5 -->
+    <section class="slide" data-slide="5" data-presenter="Person A & B" data-time="1:45 - 2:45" data-notes="Now we demonstrate human editorial authority. Person A opens the Review Queue and clicks 'Inspect Diff'. The Visual Diff modal shows side-by-side comparison, highlighting additions and rationale. The candidate edits '41%' to '45%' right inside the modal before accepting.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Live Demo Checkpoint · Slide 05</span>
+          <h2 class="slide-title">Act III: Human Editorial Control</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speakers: <strong>Person A & B</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Review Queue & Visual Diff</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>Full Candidate Editorial Authority</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Side-by-Side Diff Inspector:</strong> Highlights modifications in emerald and original text with zero guesswork.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>In-Place Bullet Refinement:</strong> Edit numbers, metrics, or confidential terms before document insertion.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Instant Impact Analysis:</strong> Shows projected ATS score surge from 74% to 88% in real time.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/08_visual_diff_modal.png" alt="Visual Diff Modal">
+          <span class="media-caption">Visual Diff Modal with Live In-Place Editor</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Human-in-the-Loop Verification</span>
+        <span>Slide 5 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 6 -->
+    <section class="slide" data-slide="6" data-presenter="Person D & A" data-time="2:45 - 3:45" data-notes="What happens when a new project would cause the resume to spill onto Page 2? Our 1-Page Budget meter alerts at 44/45 lines and triggers Smart Swapping. It identifies the oldest, least relevant project, archives it to PostgreSQL, and keeps the resume strictly to 43 lines.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Live Demo Checkpoint · Slide 06</span>
+          <h2 class="slide-title">Act IV: Strict 1-Page Lock & Smart Swapping</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speakers: <strong>Person D & A</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Line Budget Protector</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>Algorithmic 1-Page Layout Protection</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Line Budget Meter:</strong> Calculates vertical line usage (45 line ceiling for standard US Letter).
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Intelligent Archiving:</strong> Analyzes repo age, stars, and JD keyword alignment to recommend lowest-impact project for archive.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Zero Formatting Spill:</strong> Safely stores archived project in PostgreSQL and preserves exactly 43 lines.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/09_page_budget_strictness.png" alt="Smart Swap Modal">
+          <span class="media-caption">Line Budget Meter & Smart Swap Recommendation</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>No Page 2 Rejections</span>
+        <span>Slide 6 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 7 -->
+    <section class="slide" data-slide="7" data-presenter="Person A & D" data-time="3:15 - 3:45" data-notes="Person A pastes a real Job Description for a Senior Backend role at Stripe. In 1.2 seconds, our embedding model analyzes semantic alignment, surges the match score to 86%, highlights 12 matched keywords, and reveals critical missing skills like gRPC and Kubernetes.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Live Demo Checkpoint · Slide 07</span>
+          <h2 class="slide-title">Act IV (Cont.): Target JD Matcher</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speakers: <strong>Person A & D</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">ATS Keyword Alignment</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>Real-Time Screening Tailoring & Gap Analysis</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>86% Target Match:</strong> Analyzes cosine similarity and keyword alignment against actual job requirements.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Matched Core Skills:</strong> Highlights Python, FastAPI, Redis, Distributed Locks, Prometheus, Docker.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Actionable Gap Detection:</strong> Flags high-frequency missing keywords (e.g. gRPC, Kubernetes) to target.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/10_target_jd_match_report.png" alt="Target JD Match Report">
+          <span class="media-caption">ATS Matcher: 86% Fit & Actionable Gap Identification</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Targeted Job Application Precision</span>
+        <span>Slide 7 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 8 -->
+    <section class="slide" data-slide="8" data-presenter="Person C & D" data-time="3:45 - 4:30" data-notes="When the candidate clicks Download .docx, python-docx generates the document in 340 milliseconds. Opening in Word confirms 100% typography and margin preservation. All tokens are encrypted using Fernet AES-256 with zero credential leakage.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Enterprise Polish · Slide 08</span>
+          <h2 class="slide-title">Act V: Sub-Second Docx & Security</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speakers: <strong>Person C & D</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Docx Fidelity & Vault</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>OpenXML Fidelity & Defense in Depth</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Sub-Second OpenXML Build:</strong> Generates pixel-perfect Microsoft Word <code>.docx</code> files in <strong>340ms</strong>.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>100% Style Preservation:</strong> Retains fonts (Calibri 11pt), header rules, 0.75-inch margins, and bullet indents.
+              </div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">✓</span>
+              <div>
+                <strong>Fernet AES-256 Token Encryption:</strong> Zero GitHub OAuth tokens stored in plaintext. Complete security compliance.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="media-box">
+          <img src="../screenshots/11_docx_one_page_lock.png" alt="Word Document Layout Parity">
+          <span class="media-caption">Microsoft Word Rendering & 1-Page Layout Lock</span>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Production Quality & Security Standards</span>
+        <span>Slide 8 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 9 -->
+    <section class="slide" data-slide="9" data-presenter="Person B (MC)" data-time="4:30 - 4:45" data-notes="Here are our production benchmark metrics: 2.4s pipeline latency, +32 point ATS score surge, 340ms docx generation, 100% test pass rate across 112 test cases, and zero security vulnerabilities.">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Production Standards · Slide 09</span>
+          <h2 class="slide-title">Benchmark Metrics & QA Verification</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speaker: <strong>Person B (MC)</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">SLA Compliance</div>
+        </div>
+      </div>
+      <div class="slide-body full-width">
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-val">2.40s</div>
+            <div class="metric-label">Pipeline Latency</div>
+            <div class="metric-sub">Target &lt;5.0s (2x SLA Exceeded)</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">+32 pts</div>
+            <div class="metric-label">ATS Score Surge</div>
+            <div class="metric-sub">Baseline 62% &rarr; 94% Strong Match</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">340ms</div>
+            <div class="metric-label">Docx Build Speed</div>
+            <div class="metric-sub">Sub-second OpenXML compilation</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">100%</div>
+            <div class="metric-label">1-Page Compliance</div>
+            <div class="metric-sub">Hard line budget ceiling locked</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">112 / 112</div>
+            <div class="metric-label">Automated Tests</div>
+            <div class="metric-sub">100% test suite pass rate</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">0</div>
+            <div class="metric-label">Vulnerabilities</div>
+            <div class="metric-sub">Zero credential leakage / Fernet vault</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Production Readiness & Benchmarks</span>
+        <span>Slide 9 of 10</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 -->
+    <section class="slide" data-slide="10" data-presenter="Person B (MC)" data-time="4:45 - 5:00" data-notes="In 5 minutes, you saw a real git push transform into an editorialized, ATS-maximized, 1-page Word resume. Thank you to Person A, C, D, and E, and thank you all for watching. We now welcome questions!">
+      <div class="slide-header">
+        <div>
+          <span class="slide-badge">Grand Finale · Slide 10</span>
+          <h2 class="slide-title">Conclusion & Open Q&A</h2>
+        </div>
+        <div class="slide-presenter">
+          <div>Speaker: <strong>Person B & Team</strong></div>
+          <div style="font-size: 11px; color: var(--emerald); font-weight: 800;">Wrap-up & Q&A</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="content-box">
+          <h3>The Complete Upgraded System Delivered</h3>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <span class="feature-icon">1</span>
+              <div><strong>Smart Pipeline:</strong> Sparse commit diffs transformed into rich achievements.</div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">2</span>
+              <div><strong>Review Queue & Visual Diff:</strong> Candidate retains 100% editorial authority.</div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">3</span>
+              <div><strong>1-Page Lock & Smart Swap:</strong> Automated line budgeting eliminates bloat.</div>
+            </li>
+            <li class="feature-item">
+              <span class="feature-icon">4</span>
+              <div><strong>Target JD Matcher:</strong> Real-time alignment and keyword gap detection.</div>
+            </li>
+          </ul>
+        </div>
+        <div class="metric-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <div style="font-size: 48px; margin-bottom: 12px;">🚀</div>
+          <h3 style="font-size: 24px; font-weight: 900; color: var(--olive-wood); margin-bottom: 8px;">Thank You!</h3>
+          <p style="font-size: 14px; color: var(--sage); font-weight: 700;">Person A · Person B · Person C · Person D · Person E</p>
+          <div style="margin-top: 16px; padding: 8px 16px; border-radius: 9999px; background: rgba(16, 185, 129, 0.1); color: var(--emerald); font-weight: 800; font-size: 12px;">
+            Ready for Evaluator Questions
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Resume Auto-Updater — 5-Minute Live Demonstration</span>
+        <span>Slide 10 of 10</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Speaker Notes Drawer -->
+  <aside id="notes-drawer">
+    <div><strong>Speaker Cue:</strong> <span id="notes-presenter">Person B (MC)</span> · <strong>Time Window:</strong> <span id="notes-time">0:00 - 0:45</span></div>
+    <div id="notes-text" style="margin-top: 6px;"></div>
+  </aside>
+
+  <!-- Control Toolbar -->
+  <footer id="toolbar">
+    <div class="toolbar-left">
+      <button class="btn btn-secondary" id="btn-prev" onclick="changeSlide(-1)">
+        <span>←</span> Previous
+      </button>
+      <button class="btn" id="btn-next" onclick="changeSlide(1)">
+        Next <span>→</span>
+      </button>
+      <span id="slide-indicator">Slide 1 / 10</span>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-secondary" onclick="toggleNotes()">
+        <span>📝</span> Speaker Notes (N)
+      </button>
+      <button class="btn btn-secondary" onclick="toggleFullScreen()">
+        <span>⛶</span> Full Screen (F)
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let currentIdx = 0;
+
+    function updateDeck() {
+      slides.forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentIdx);
+      });
+
+      const currentSlide = slides[currentIdx];
+      const slideNum = currentIdx + 1;
+      const total = slides.length;
+
+      document.getElementById('slide-indicator').textContent = `Slide ${slideNum} / ${total}`;
+      document.getElementById('progress-bar').style.width = `${(slideNum / total) * 100}%`;
+
+      // Update speaker notes
+      document.getElementById('notes-presenter').textContent = currentSlide.dataset.presenter || 'Team';
+      document.getElementById('notes-time').textContent = currentSlide.dataset.time || '';
+      document.getElementById('notes-text').textContent = currentSlide.dataset.notes || 'No speaker notes for this slide.';
+
+      document.getElementById('btn-prev').disabled = currentIdx === 0;
+      document.getElementById('btn-next').disabled = currentIdx === total - 1;
+    }
+
+    function changeSlide(direction) {
+      const newIdx = currentIdx + direction;
+      if (newIdx >= 0 && newIdx < slides.length) {
+        currentIdx = newIdx;
+        updateDeck();
+      }
+    }
+
+    function toggleNotes() {
+      document.getElementById('notes-drawer').classList.toggle('open');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        changeSlide(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        changeSlide(-1);
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      } else if (e.key === 'Home') {
+        currentIdx = 0;
+        updateDeck();
+      } else if (e.key === 'End') {
+        currentIdx = slides.length - 1;
+        updateDeck();
+      }
+    });
+
+    updateDeck();
+  </script>
+</body>
+</html>

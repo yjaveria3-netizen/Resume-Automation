@@ -101,7 +101,7 @@ export default function ResumeDiffViewer({
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-sage animate-pulse" />
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-sage">
-              Day 6 • AI Diff & Impact Inspector
+              AI Diff & Impact Inspector
             </span>
           </div>
           <h3 className="text-xl font-extrabold text-olive-wood">

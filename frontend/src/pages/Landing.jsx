@@ -16,7 +16,7 @@ export default function Landing() {
           {/* Top Pill Announcement */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-khaki/50 shadow-2xs text-xs font-bold text-olive-wood animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-sage-hover">Day 11 & 12 Released:</span>
+            <span className="text-sage-hover">Enterprise Update:</span>
             <span className="text-olive-wood/80 font-medium">Human Review Queue & 1-Page Layout Strictness</span>
           </div>
 

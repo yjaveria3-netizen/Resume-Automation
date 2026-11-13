@@ -56,9 +56,8 @@ export default function PreviewTest() {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-sage/20 text-sage text-xs font-bold uppercase tracking-wider">
-                Day 3 Test Suite
+                Preview Test Suite
               </span>
-              <span className="text-xs text-olive-wood/60">Person B — Frontend QA</span>
             </div>
             <h1 className="text-2xl font-bold text-olive-wood mt-1">
               Resume Preview & Action Toolbar Test Harness

@@ -68,9 +68,8 @@ export default function AtsTest() {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-sage/20 text-sage text-xs font-bold uppercase tracking-wider">
-                Day 4 QA Test Suite
+                ATS QA Test Suite
               </span>
-              <span className="text-xs text-olive-wood/60">Person B — Frontend Support & QA</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-olive-wood mt-1">
               ATS Score & Feedback System Test Harness
