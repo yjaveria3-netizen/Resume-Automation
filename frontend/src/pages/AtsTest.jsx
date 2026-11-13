@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AtsScoreBadge,
-  AtsFeedbackList,
   AtsScoreCard,
   mockAtsData94,
-  mockAtsData72,
-  mockAtsData45,
   mockScenarios,
 } from '../components/ats';
 

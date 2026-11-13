@@ -180,7 +180,7 @@ export default function SuggestionsQueueCard({
                   <button
                     type="button"
                     onClick={() => toggleEdit(suggestion)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-sage hover:text-sage-hover transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-sage hover:text-sage-hover transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded"
                     title={editing ? 'Lock changes' : 'Edit bullet text'}
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +228,7 @@ export default function SuggestionsQueueCard({
                   type="button"
                   onClick={() => handleDismissClick(suggestion.id)}
                   disabled={isProcessing}
-                  className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-white hover:bg-rose-50 hover:border-rose-200 text-olive-wood/70 hover:text-rose-700 text-xs font-bold transition-all shadow-2xs cursor-pointer text-center disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-white hover:bg-rose-50 hover:border-rose-200 text-olive-wood/70 hover:text-rose-700 text-xs font-bold transition-all shadow-2xs cursor-pointer text-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                 >
                   Dismiss
                 </button>
@@ -238,7 +238,7 @@ export default function SuggestionsQueueCard({
                   type="button"
                   onClick={() => setDiffModalItem(suggestion)}
                   disabled={isProcessing}
-                  className="px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50/70 hover:bg-emerald-100/80 text-emerald-800 text-xs font-bold transition-all shadow-2xs cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50/70 hover:bg-emerald-100/80 text-emerald-800 text-xs font-bold transition-all shadow-2xs cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                   title="Open GitHub-style visual diff modal"
                 >
                   <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +253,7 @@ export default function SuggestionsQueueCard({
                   type="button"
                   onClick={() => toggleEdit(suggestion)}
                   disabled={isProcessing}
-                  className="px-4 py-2.5 rounded-xl border border-khaki/40 bg-white hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl border border-khaki/40 bg-white hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                 >
                   <svg className="w-3.5 h-3.5 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -271,7 +271,7 @@ export default function SuggestionsQueueCard({
                   type="button"
                   onClick={() => handleAcceptClick(suggestion)}
                   disabled={isProcessing}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-extrabold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-extrabold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                 >
                   {isProcessing ? (
                     <>

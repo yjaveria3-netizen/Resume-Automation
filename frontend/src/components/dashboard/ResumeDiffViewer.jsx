@@ -17,7 +17,7 @@ export default function ResumeDiffViewer({
   versionB = 'AI Optimized (Latest)',
   scoreA = 64,
   scoreB = 94,
-  githubContext = null,
+  githubContext: _githubContext = null,
 }) {
   const [viewMode, setViewMode] = useState('side-by-side'); // 'side-by-side' | 'unified'
   const scoreDelta = scoreB - scoreA;

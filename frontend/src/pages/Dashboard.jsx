@@ -52,7 +52,7 @@ export default function Dashboard() {
 
   // Day 11 Review Queue State
   const [suggestions, setSuggestions] = useState([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [_loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Day 12 1-Page Strictness & Line Budget State
   const [linesUsed, setLinesUsed] = useState(38);
@@ -293,6 +293,21 @@ export default function Dashboard() {
     loadSuggestions();
     loadProjects();
   }, []);
+
+  // Global Escape key listener to close drawer and modal
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isJdDrawerOpen) {
+          setIsJdDrawerOpen(false);
+        } else if (smartSwapModalState.isOpen) {
+          setSmartSwapModalState((prev) => ({ ...prev, isOpen: false }));
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isJdDrawerOpen, smartSwapModalState.isOpen]);
 
   // Review Queue: Accept workflow (checks 1-page budget threshold)
   const handleAcceptSuggestion = async (id, customBullet) => {
@@ -606,7 +621,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setIsJdDrawerOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-extrabold shadow-xs transition-all flex items-center gap-2 cursor-pointer ring-2 ring-sage/20"
+              className="px-4 py-2.5 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-extrabold shadow-xs transition-all flex items-center gap-2 cursor-pointer ring-2 ring-sage/20 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
             >
               <span className="text-amber-200 font-bold">■</span>
               <span>Match Against Job Description</span>
@@ -614,7 +629,7 @@ export default function Dashboard() {
 
             <Link
               to="/upload"
-              className="px-4 py-2.5 rounded-xl bg-white hover:bg-khaki-light text-olive-wood border border-khaki/50 text-xs font-bold shadow-xs transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-khaki-light text-olive-wood border border-khaki/50 text-xs font-bold shadow-xs transition-all flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
             >
               <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -726,7 +741,7 @@ export default function Dashboard() {
                 type="button"
                 onClick={handleUpdateResume}
                 disabled={isRegenerating}
-                className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer ring-4 ring-sage/20 disabled:opacity-50 hover:animate-pulse-glow"
+                className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer ring-4 ring-sage/20 disabled:opacity-50 hover:animate-pulse-glow focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
               >
                 <svg className="w-5 h-5 text-amber-300 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clipRule="evenodd" />
@@ -800,7 +815,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={handleSimulateNewCommit}
-                  className="px-3.5 py-1.5 rounded-xl bg-khaki-light/60 hover:bg-khaki-light text-olive-wood/80 hover:text-olive-wood font-bold transition-all border border-khaki/50 cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  className="px-3.5 py-1.5 rounded-xl bg-khaki-light/60 hover:bg-khaki-light text-olive-wood/80 hover:text-olive-wood font-bold transition-all border border-khaki/50 cursor-pointer flex items-center gap-1.5 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                 >
                   <span className="text-sage font-bold">+</span>
                   <span>Test New Commit Flow</span>
@@ -814,7 +829,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('preview')}
-                  className={`flex-1 min-w-[110px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`flex-1 min-w-[110px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
                     activeTab === 'preview'
                       ? 'bg-olive-wood text-white shadow-xs'
                       : 'text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'
@@ -830,7 +845,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('ats')}
-                  className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
                     activeTab === 'ats'
                       ? 'bg-olive-wood text-white shadow-xs'
                       : 'text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'
@@ -852,7 +867,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('history')}
-                  className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
                     activeTab === 'history'
                       ? 'bg-olive-wood text-white shadow-xs'
                       : 'text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'

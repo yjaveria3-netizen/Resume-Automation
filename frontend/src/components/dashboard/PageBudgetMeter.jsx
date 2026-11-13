@@ -87,7 +87,7 @@ export default function PageBudgetMeter({
             <button
               type="button"
               onClick={onSmartSwapClick}
-              className="font-bold underline text-amber-900 hover:text-amber-950 cursor-pointer ml-2"
+              className="font-bold underline text-amber-900 hover:text-amber-950 cursor-pointer ml-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded px-1"
             >
               Open Smart Swap
             </button>

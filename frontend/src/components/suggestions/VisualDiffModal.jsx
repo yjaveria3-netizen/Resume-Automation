@@ -40,8 +40,10 @@ export default function VisualDiffModal({
         onClose?.();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
   }, [isOpen, onClose, isSubmitting]);
 
   if (!isOpen || !suggestion) {
@@ -87,26 +89,26 @@ export default function VisualDiffModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-fadeIn"
     >
       <div
-        className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-khaki/30 flex flex-col overflow-hidden my-auto max-h-[92vh] transition-transform duration-300 transform scale-100 animate-scaleUp"
+        className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-khaki/30 flex flex-col overflow-hidden my-auto max-h-[94vh] transition-transform duration-300 transform scale-100 animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header: Reviewing Changes for [Repo Name] */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-olive-wood text-white px-5 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-700">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-olive-wood text-white px-4 sm:px-6 py-3.5 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-700">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <h2 id="modal-title" className="text-base sm:text-lg font-black tracking-tight text-white">
+              <h2 id="modal-title" className="text-sm sm:text-lg font-black tracking-tight text-white">
                 Reviewing Changes for <span className="text-emerald-300 underline decoration-emerald-500/50">{repoName}</span>
               </h2>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-              <span className="font-mono bg-slate-800/80 px-2 py-0.5 rounded border border-slate-600 text-emerald-300">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-300">
+              <span className="font-mono bg-slate-800/80 px-2 py-0.5 rounded border border-slate-600 text-emerald-300 text-[11px] sm:text-xs">
                 sha: {commitSha}
               </span>
-              <span className="truncate max-w-xs sm:max-w-md text-slate-400">
+              <span className="truncate max-w-[180px] sm:max-w-md text-slate-400 text-[11px] sm:text-xs">
                 "{commitMessage}"
               </span>
             </div>
@@ -118,7 +120,7 @@ export default function VisualDiffModal({
               <button
                 type="button"
                 onClick={() => setViewMode('diff')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
                   viewMode === 'diff'
                     ? 'bg-emerald-500 text-slate-950 shadow-xs'
                     : 'text-slate-300 hover:text-white'
@@ -129,7 +131,7 @@ export default function VisualDiffModal({
               <button
                 type="button"
                 onClick={() => setViewMode('document')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
                   viewMode === 'document'
                     ? 'bg-emerald-500 text-slate-950 shadow-xs'
                     : 'text-slate-300 hover:text-white'
@@ -144,8 +146,9 @@ export default function VisualDiffModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
               title="Close modal"
+              aria-label="Close modal"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -155,7 +158,7 @@ export default function VisualDiffModal({
         </div>
 
         {/* Modal Body: Scrollable */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 text-sm">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-sm">
           {viewMode === 'diff' ? (
             /* --- DIFF VIEW --- */
             <div className="space-y-4">
@@ -216,7 +219,7 @@ export default function VisualDiffModal({
                                 <button
                                   type="button"
                                   onClick={() => setIsEditing(false)}
-                                  className="text-xs font-bold text-emerald-700 bg-white px-3 py-1 rounded-lg border border-emerald-300 hover:bg-emerald-100 cursor-pointer"
+                                  className="text-xs font-bold text-emerald-700 bg-white px-3 py-1 rounded-lg border border-emerald-300 hover:bg-emerald-100 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                                 >
                                   Done
                                 </button>
@@ -237,7 +240,7 @@ export default function VisualDiffModal({
                               <button
                                 type="button"
                                 onClick={handleCopy}
-                                className="hover:underline font-semibold text-emerald-800 flex items-center gap-1 cursor-pointer"
+                                className="hover:underline font-semibold text-emerald-800 flex items-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded"
                               >
                                 {copied ? '✓ Copied' : 'Copy bullet'}
                               </button>
@@ -245,7 +248,7 @@ export default function VisualDiffModal({
                               <button
                                 type="button"
                                 onClick={() => setIsEditing(!isEditing)}
-                                className="hover:underline font-bold text-emerald-900 cursor-pointer"
+                                className="hover:underline font-bold text-emerald-900 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded"
                               >
                                 {isEditing ? 'Close editor' : 'Edit text'}
                               </button>
@@ -368,7 +371,7 @@ export default function VisualDiffModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
             >
               Cancel
             </button>
@@ -378,7 +381,7 @@ export default function VisualDiffModal({
               type="button"
               onClick={handleConfirm}
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-black shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-black shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
             >
               {isSubmitting ? (
                 <>

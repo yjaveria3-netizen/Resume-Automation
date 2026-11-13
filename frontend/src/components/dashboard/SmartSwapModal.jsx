@@ -32,6 +32,19 @@ export default function SmartSwapModal({
     }
   }, [existingProjects]);
 
+  // Handle escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && !isProcessing) {
+        onClose?.();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose, isProcessing]);
+
   if (!isOpen) return null;
 
   const candidateOldProject =
@@ -56,8 +69,8 @@ export default function SmartSwapModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white w-full max-w-lg rounded-3xl border border-khaki/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white w-full max-w-lg rounded-3xl border border-khaki/40 shadow-2xl p-4 sm:p-7 space-y-5 animate-scale-in">
         {/* Header with Warning Icon */}
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
@@ -130,7 +143,7 @@ export default function SmartSwapModal({
             type="button"
             onClick={handleKeepBothClick}
             disabled={isProcessing}
-            className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-white hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer text-center disabled:opacity-50"
+            className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-white hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer text-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
           >
             Keep Both (2 Pages)
           </button>
@@ -140,7 +153,7 @@ export default function SmartSwapModal({
             type="button"
             onClick={handleSwapClick}
             disabled={isProcessing}
-            className="px-5 py-2.5 rounded-xl bg-sage hover:bg-sage-hover active:scale-[0.98] text-white text-xs font-extrabold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-sage hover:bg-sage-hover active:scale-[0.98] text-white text-xs font-extrabold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
           >
             {isProcessing ? (
               <>

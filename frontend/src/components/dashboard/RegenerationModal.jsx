@@ -37,7 +37,7 @@ const REGENERATION_STEPS = [
 export default function RegenerationModal({
   isOpen,
   isFinished = false,
-  resultData = null,
+  resultData: _resultData = null,
   error = null,
   onClose,
   onRetry,

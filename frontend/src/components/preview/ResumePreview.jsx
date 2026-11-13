@@ -157,7 +157,7 @@ export function ResumePreviewSkeleton() {
 /**
  * Empty state component shown when no resume has been uploaded yet
  */
-export function ResumePreviewEmpty({ onUploadClick, onLoadSampleClick }) {
+export function ResumePreviewEmpty({ onUploadClick: _onUploadClick, onLoadSampleClick }) {
   return (
     <div className="w-full bg-white rounded-3xl border-2 border-dashed border-khaki/50 p-8 sm:p-14 flex flex-col items-center justify-center text-center shadow-xs min-h-[480px]">
       <div className="w-16 h-16 rounded-2xl bg-sage/15 text-sage flex items-center justify-center mb-4 ring-8 ring-sage/5">

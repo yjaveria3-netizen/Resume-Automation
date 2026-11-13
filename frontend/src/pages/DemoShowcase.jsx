@@ -2,7 +2,6 @@ import { useState } from 'react';
 import ResumePreview from '../components/preview/ResumePreview';
 import ResumeActionBar from '../components/preview/ResumeActionBar';
 import AtsScoreCard from '../components/ats/AtsScoreCard';
-import AtsScoreBadge from '../components/ats/AtsScoreBadge';
 import RegenerationModal from '../components/dashboard/RegenerationModal';
 import ResumeDiffViewer from '../components/dashboard/ResumeDiffViewer';
 import VersionHistoryList from '../components/dashboard/VersionHistoryList';

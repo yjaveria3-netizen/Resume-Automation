@@ -8,10 +8,10 @@ import { useState } from 'react';
  * - Test suite breakdown by day & feature pillar
  * - Exportable markdown/text test certification report
  */
-export default function QATestRunner({ onTriggerModalDemo }) {
+export default function QATestRunner({ onTriggerModalDemo: _onTriggerModalDemo }) {
   const [activeDayTab, setActiveDayTab] = useState('all');
   const [isRunningAll, setIsRunningAll] = useState(false);
-  const [testResults, setTestResults] = useState({
+  const [testResults, _setTestResults] = useState({
     'd1-tokens': { status: 'pass', name: 'Design Tokens & Theme Consistency', day: 1, duration: '12ms' },
     'd1-auth': { status: 'pass', name: 'Authentication Session & JWT Flow', day: 1, duration: '45ms' },
     'd2-empty': { status: 'pass', name: 'Empty States & Upload Prompt Fallbacks', day: 2, duration: '18ms' },

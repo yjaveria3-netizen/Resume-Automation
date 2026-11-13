@@ -51,11 +51,13 @@ export default function JobDescriptionDrawer({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose?.();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
   }, [isOpen, onClose]);
 
   // Lock body scroll when drawer is open
@@ -145,18 +147,18 @@ export default function JobDescriptionDrawer({
         }`}
       >
         {/* Drawer Header */}
-        <div className="px-6 py-5 border-b border-khaki/30 flex items-center justify-between bg-gradient-to-r from-khaki-light/60 to-white">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-khaki/30 flex items-center justify-between bg-gradient-to-r from-khaki-light/60 to-white">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-sage/20 text-sage">
+            <div className="p-2 rounded-xl bg-sage/20 text-sage shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-olive-wood">
+              <h2 className="text-base sm:text-lg font-extrabold text-olive-wood">
                 Target Job Description Matcher
               </h2>
-              <p className="text-xs text-olive-wood/70 font-medium">
+              <p className="text-[11px] sm:text-xs text-olive-wood/70 font-medium">
                 Analyze ATS keyword alignment and optimize your resume for specific roles
               </p>
             </div>
@@ -165,7 +167,7 @@ export default function JobDescriptionDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl border border-khaki/40 text-olive-wood/60 hover:text-olive-wood hover:bg-khaki-light transition-all flex items-center justify-center cursor-pointer font-bold text-sm"
+            className="w-9 h-9 rounded-xl border border-khaki/40 text-olive-wood/60 hover:text-olive-wood hover:bg-khaki-light transition-all flex items-center justify-center cursor-pointer font-bold text-sm shrink-0 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
             aria-label="Close drawer"
           >
             ✕
@@ -173,7 +175,7 @@ export default function JobDescriptionDrawer({
         </div>
 
         {/* Drawer Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {/* Quick Load Sample JD Pills */}
           <div className="space-y-2">
             <span className="text-xs font-bold text-olive-wood/75 uppercase tracking-wider block">
@@ -185,7 +187,7 @@ export default function JobDescriptionDrawer({
                   key={type}
                   type="button"
                   onClick={() => handleLoadSample(type)}
-                  className="px-3 py-1.5 rounded-xl bg-khaki-light/60 hover:bg-khaki-light border border-khaki/50 text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-xl bg-khaki-light/60 hover:bg-khaki-light border border-khaki/50 text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
                 >
                   <span className="text-sage font-extrabold">•</span>
                   <span>{type} Role</span>
@@ -199,7 +201,7 @@ export default function JobDescriptionDrawer({
                     setMatchResults(null);
                     setError(null);
                   }}
-                  className="px-2.5 py-1.5 text-xs text-olive-wood/60 hover:text-rose-600 transition-colors ml-auto font-medium"
+                  className="px-2.5 py-1.5 text-xs text-olive-wood/60 hover:text-rose-600 transition-colors ml-auto font-medium focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded-lg"
                 >
                   Clear text
                 </button>
@@ -241,7 +243,7 @@ export default function JobDescriptionDrawer({
             type="button"
             onClick={handleAnalyze}
             disabled={isAnalyzing || !jobText.trim()}
-            className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
           >
             {isAnalyzing ? (
               <>
@@ -261,8 +263,22 @@ export default function JobDescriptionDrawer({
             )}
           </button>
 
+          {/* Subtle loading skeleton pulse while analyzing */}
+          {isAnalyzing && (
+            <div className="pt-2 border-t border-khaki/30 animate-fade-in" aria-live="polite" aria-busy="true">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold text-olive-wood uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+                  Analyzing Keyword Breakdown...
+                </span>
+                <span className="text-[11px] text-olive-wood/60 font-medium">Extracting ATS factors</span>
+              </div>
+              <AtsKeywordBreakdown isLoading={true} />
+            </div>
+          )}
+
           {/* Results Area with Person B's AtsKeywordBreakdown */}
-          {matchResults && (
+          {!isAnalyzing && matchResults && (
             <div className="pt-2 border-t border-khaki/30 animate-fade-in">
               <h3 className="text-sm font-bold text-olive-wood mb-4 flex items-center justify-between">
                 <span>Analysis Results</span>
@@ -279,14 +295,14 @@ export default function JobDescriptionDrawer({
         </div>
 
         {/* Drawer Footer */}
-        <div className="p-4 border-t border-khaki/30 bg-khaki-light/30 flex items-center justify-between">
+        <div className="p-4 border-t border-khaki/30 bg-khaki-light/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
           <span className="text-xs text-olive-wood/60 font-medium">
             Strict 1-Page Layout Preservation Active
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-olive-wood hover:bg-khaki-light transition-all border border-khaki/50 cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-olive-wood hover:bg-khaki-light transition-all border border-khaki/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
           >
             Close
           </button>
