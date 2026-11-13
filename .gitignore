@@ -21,9 +21,11 @@ backend/uploads/
 uploads/
 *.docx
 !docs/*.docx
+!frontend/public/*.docx
 
 # OS
 .DS_Store
+scratch/
 
 # Nested repo
 resume-automation-/

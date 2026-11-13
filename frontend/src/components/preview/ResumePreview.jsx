@@ -4,15 +4,15 @@ import React from 'react';
  * Default mock resume data used for the preview panel
  */
 export const defaultResumeData = {
-  name: "Alex Morgan",
-  title: "Senior Full-Stack Engineer & AI Integrator",
+  name: "Software Engineer",
+  title: "Full-Stack Software Engineer & AI Integrator",
   contact: {
-    email: "alex.morgan@example.com",
-    phone: "+1 (555) 234-5678",
+    email: "developer@example.com",
+    phone: "+1 (555) 019-2834",
     location: "San Francisco, CA",
-    linkedin: "linkedin.com/in/alexmorgan",
-    github: "github.com/alexmorgan-dev",
-    website: "alexmorgan.io"
+    linkedin: "linkedin.com/in/developer",
+    github: "github.com/developer",
+    website: "portfolio.dev"
   },
   summary: "Results-driven Full-Stack Engineer with 5+ years of experience designing scalable distributed web architectures, high-performance APIs, and AI-assisted automation pipelines. Proven track record reducing cloud latency by 42% and optimizing ATS ranking for mission-critical career platforms.",
   experience: [
@@ -157,54 +157,51 @@ export function ResumePreviewSkeleton() {
 /**
  * Empty state component shown when no resume has been uploaded yet
  */
-export function ResumePreviewEmpty({ onUploadClick }) {
+export function ResumePreviewEmpty({ onUploadClick, onLoadSampleClick }) {
   return (
-    <div className="w-full bg-white rounded-lg border-2 border-dashed border-khaki/60 p-8 sm:p-16 flex flex-col items-center justify-center text-center shadow-sm min-h-[500px]">
+    <div className="w-full bg-white rounded-3xl border-2 border-dashed border-khaki/50 p-8 sm:p-14 flex flex-col items-center justify-center text-center shadow-xs min-h-[480px]">
       <div className="w-16 h-16 rounded-2xl bg-sage/15 text-sage flex items-center justify-center mb-4 ring-8 ring-sage/5">
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       </div>
 
-      <h3 className="text-xl font-bold text-olive-wood">No Resume Preview Available</h3>
-      <p className="text-olive-wood/70 text-sm max-w-md mt-2 mb-6">
-        Upload your master resume in <span className="font-semibold text-olive-wood">.docx</span> or <span className="font-semibold text-olive-wood">.pdf</span> format to preview auto-generated updates, tailored bullets, and ATS optimization.
+      <h3 className="text-xl sm:text-2xl font-extrabold text-olive-wood">No Resume File Uploaded Yet</h3>
+      <p className="text-olive-wood/70 text-xs sm:text-sm max-w-md mt-2 mb-6 leading-relaxed font-medium">
+        Upload your existing <span className="font-bold text-olive-wood">.docx</span> resume to enable automatic GitHub commit bullet insertion, 1-page line budget protection, and ATS optimization.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center gap-3">
-        {onUploadClick ? (
+        <a
+          href="/upload"
+          className="px-6 py-3 rounded-2xl bg-sage text-white text-xs font-extrabold shadow-md hover:bg-sage-hover transition-all flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span>Upload Resume (.docx)</span>
+        </a>
+
+        {onLoadSampleClick && (
           <button
             type="button"
-            onClick={onUploadClick}
-            className="px-6 py-2.5 rounded-xl bg-sage text-white font-medium shadow-md hover:bg-sage-hover transition-all flex items-center gap-2 cursor-pointer"
+            onClick={onLoadSampleClick}
+            className="px-5 py-3 rounded-2xl bg-khaki-light/60 hover:bg-khaki-light text-olive-wood text-xs font-bold border border-khaki/50 transition-all shadow-2xs cursor-pointer flex items-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            Upload Resume Now
+            <span>Preview Sample Template</span>
           </button>
-        ) : (
-          <a
-            href="/upload"
-            className="px-6 py-2.5 rounded-xl bg-sage text-white font-medium shadow-md hover:bg-sage-hover transition-all flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            Upload Resume Now
-          </a>
         )}
       </div>
 
-      <div className="mt-8 pt-6 border-t border-khaki/30 flex items-center gap-6 text-xs text-olive-wood/60">
+      <div className="mt-8 pt-6 border-t border-khaki/20 flex flex-wrap justify-center items-center gap-6 text-xs text-olive-wood/60">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> US Letter (8.5" x 11")
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Strict 1-Page Layout Preservation
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> ATS Compatible
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> ATS Screening Compatible
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> DOCX / PDF Export
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Word (.docx) Format
         </span>
       </div>
     </div>
@@ -226,6 +223,7 @@ function ResumePreview({
   isLoading = false,
   isEmpty = false,
   onUploadClick,
+  onLoadSampleClick,
   className = ""
 }) {
   if (isLoading) {
@@ -239,7 +237,7 @@ function ResumePreview({
   if (isEmpty) {
     return (
       <div className={`w-full max-w-[850px] mx-auto ${className}`}>
-        <ResumePreviewEmpty onUploadClick={onUploadClick} />
+        <ResumePreviewEmpty onUploadClick={onUploadClick} onLoadSampleClick={onLoadSampleClick} />
       </div>
     );
   }

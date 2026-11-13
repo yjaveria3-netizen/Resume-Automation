@@ -1,6 +1,6 @@
 import { getAuthHeader } from './auth';
+import { API_BASE_URL } from './config';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export const uploadResume = (file, onUploadProgress) => {
   return new Promise((resolve, reject) => {

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { uploadResume } from '../api/resumes';
 
 export default function Upload() {
@@ -86,53 +86,74 @@ export default function Upload() {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
+  const handleLoadSampleResume = async () => {
+    try {
+      const response = await fetch('/sample_resume.docx');
+      if (!response.ok) throw new Error('Sample resume file not found');
+      const blob = await response.blob();
+      const file = new File([blob], 'Software_Engineer_Resume.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+      setSelectedFile(file);
+      setErrorMessage('');
+    } catch (err) {
+      console.warn('Could not load sample resume:', err);
+    }
+  };
+
   const handleUploadSubmit = async () => {
     if (!selectedFile) return;
 
     setUploading(true);
     setErrorMessage('');
-    setUploadProgress(10);
+    setUploadProgress(15);
 
     try {
       await uploadResume(selectedFile, (progress) => {
-        setUploadProgress(progress);
+        setUploadProgress(Math.max(15, progress));
       });
 
       setUploadProgress(100);
 
       setTimeout(() => {
         navigate('/dashboard', {
-          state: { toast: `Resume "${selectedFile.name}" successfully uploaded and saved!` },
+          state: { toast: `Resume "${selectedFile.name}" successfully uploaded and processed!` },
         });
       }, 500);
     } catch (err) {
-      setErrorMessage(err.message || 'Upload failed. Please try again.');
+      setErrorMessage(err.message || 'Upload failed. Please check backend connection.');
       setUploading(false);
       setUploadProgress(0);
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-khaki-light p-6 md:p-10 flex items-center justify-center">
-      <div className="w-full max-w-2xl bg-white rounded-2xl border border-khaki/40 p-8 shadow-xl space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-olive-wood">Upload Resume</h1>
-          <p className="text-olive-wood/70 text-sm mt-1">
-            Upload your base resume file in DOCX format to parse and auto-update
-          </p>
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-khaki-light/50 to-white p-4 sm:p-8 flex items-center justify-center">
+      <div className="w-full max-w-2xl bg-white rounded-3xl border border-khaki/40 p-6 sm:p-10 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-khaki/20">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-olive-wood tracking-tight">
+              Upload Master Resume
+            </h1>
+            <p className="text-olive-wood/70 text-xs sm:text-sm mt-0.5 font-medium">
+              Upload your base resume file in Word (.docx) format for AI synchronization
+            </p>
+          </div>
+          <Link
+            to="/dashboard"
+            className="text-xs text-olive-wood/60 hover:text-olive-wood font-bold self-start sm:self-auto"
+          >
+            ← Back to Dashboard
+          </Link>
         </div>
 
         {/* Validation Error Banner */}
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700 text-sm animate-fade-in">
-            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
+          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-800 text-xs font-semibold animate-fade-in shadow-2xs">
+            <svg className="w-5 h-5 flex-shrink-0 text-rose-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <div>{errorMessage}</div>
+            <div className="flex-1">{errorMessage}</div>
           </div>
         )}
 
@@ -151,13 +172,13 @@ export default function Upload() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer space-y-4 ${
+          className={`border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center transition-all cursor-pointer space-y-4 ${
             isDragging
               ? 'border-sage bg-sage/10 scale-[1.01]'
               : 'border-khaki bg-khaki-light/20 hover:bg-khaki-light/40'
           }`}
         >
-          <div className="w-16 h-16 bg-sage/10 rounded-full flex items-center justify-center mx-auto text-sage">
+          <div className="w-16 h-16 bg-sage/15 rounded-2xl flex items-center justify-center mx-auto text-sage shadow-xs">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -167,22 +188,22 @@ export default function Upload() {
               />
             </svg>
           </div>
-          <div>
-            <p className="text-olive-wood font-medium">
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-olive-wood">
               Drag and drop your resume file here, or{' '}
-              <span className="text-sage underline font-semibold">browse files</span>
+              <span className="text-sage underline decoration-sage/40">browse files</span>
             </p>
-            <p className="text-xs text-olive-wood/60 mt-1">
-              Strictly supports .docx files (Max size: 5MB)
+            <p className="text-xs text-olive-wood/60 font-medium">
+              Strictly Microsoft Word (.docx) files up to 5 MB
             </p>
           </div>
         </div>
 
         {/* Selected File Preview Card */}
         {selectedFile && (
-          <div className="bg-khaki-light/40 rounded-xl border border-khaki/50 p-4 flex items-center justify-between gap-4 animate-fade-in">
+          <div className="bg-khaki-light/40 rounded-2xl border border-khaki/50 p-4 flex items-center justify-between gap-4 animate-fade-in shadow-2xs">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-100 text-blue-700 rounded-xl shadow-sm">
+              <div className="p-3 bg-blue-100 text-blue-700 rounded-xl shadow-xs">
                 <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
                   <path d="M15.2 13h-1.8l-1.4 3.6L10.6 13H8.8l2.3 5.4h1.8z" />
@@ -190,14 +211,14 @@ export default function Upload() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-olive-wood truncate max-w-[240px]">
+                  <p className="text-xs sm:text-sm font-bold text-olive-wood truncate max-w-[220px] sm:max-w-xs">
                     {selectedFile.name}
                   </p>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sage/20 text-sage border border-sage/30">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sage/20 text-sage border border-sage/30">
                     Ready to Upload
                   </span>
                 </div>
-                <p className="text-xs text-olive-wood/60 mt-0.5">
+                <p className="text-[11px] text-olive-wood/60 font-mono mt-0.5">
                   {formatFileSize(selectedFile.size)}
                 </p>
               </div>
@@ -207,7 +228,7 @@ export default function Upload() {
               <button
                 type="button"
                 onClick={handleRemoveFile}
-                className="p-2 text-olive-wood/50 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-olive-wood/50 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                 title="Remove file"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,11 +247,11 @@ export default function Upload() {
         {/* Upload Progress Bar */}
         {uploading && (
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-olive-wood">
-              <span>Uploading Resume...</span>
+            <div className="flex justify-between text-xs font-bold text-olive-wood">
+              <span>Parsing document & calculating line budget...</span>
               <span>{uploadProgress}%</span>
             </div>
-            <div className="w-full bg-khaki/30 rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-khaki/25 rounded-full h-2.5 overflow-hidden">
               <div
                 className="bg-sage h-2.5 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${uploadProgress}%` }}
@@ -239,25 +260,34 @@ export default function Upload() {
           </div>
         )}
 
-        {/* Upload CTA Button */}
-        <div className="flex justify-end pt-2">
+        {/* Actions Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleLoadSampleResume}
+            className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-khaki-light/50 hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>📄</span>
+            <span>Use Sample Resume (.docx)</span>
+          </button>
+
           <button
             type="button"
             onClick={handleUploadSubmit}
             disabled={!selectedFile || uploading}
-            className="px-6 py-3 rounded-xl bg-sage text-white font-semibold shadow transition-all hover:bg-sage-hover cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 rounded-2xl bg-sage hover:bg-sage-hover text-white text-xs font-extrabold shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ring-4 ring-sage/15"
           >
-            {uploading && (
-              <svg className="w-5 h-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
+            {uploading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Processing Document...</span>
+              </>
+            ) : (
+              <span>Upload & Process Resume →</span>
             )}
-            {uploading ? 'Uploading...' : 'Upload Resume'}
           </button>
         </div>
       </div>

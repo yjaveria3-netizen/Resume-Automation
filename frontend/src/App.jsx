@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -12,21 +13,22 @@ import DemoShowcase from './pages/DemoShowcase';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-khaki-light flex flex-col text-olive-wood">
+      <div className="min-h-screen bg-khaki-light/30 flex flex-col text-olive-wood">
         <Navbar />
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Public Landing Page */}
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            {/* Protected Routes (Require JWT Token) */}
+            {/* Protected Routes (Require Authenticated Session) */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/upload" element={<Upload />} />
             </Route>
 
-            {/* Public Demo, Showcase & Test Routes */}
+            {/* Public Showcase & QA Testing Routes (Preserved separately as requested) */}
             <Route path="/demo" element={<DemoShowcase />} />
             <Route path="/qa" element={<DemoShowcase />} />
             <Route path="/preview-test" element={<PreviewTest />} />
@@ -34,7 +36,7 @@ export default function App() {
             <Route path="/ats-test" element={<AtsTest />} />
             <Route path="/ats" element={<AtsTest />} />
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>

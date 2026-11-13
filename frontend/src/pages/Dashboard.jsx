@@ -20,8 +20,8 @@ import {
   dismissSuggestion,
   swapProjectSuggestion,
 } from '../api/suggestions';
+import { API_BASE_URL } from '../api/config';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export default function Dashboard() {
   const location = useLocation();
@@ -44,8 +44,9 @@ export default function Dashboard() {
   const [resumeVersions, setResumeVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
 
-  // Resume Content & ATS State
-  const [resumeData, setResumeData] = useState(defaultResumeData);
+  // Resume Content & ATS State (null by default until resume loaded or sample requested)
+  const [resumeData, setResumeData] = useState(null);
+  const [isSamplePreview, setIsSamplePreview] = useState(false);
   const [atsScore, setAtsScore] = useState(94);
   const [atsData, setAtsData] = useState(mockAtsData94);
 
@@ -121,9 +122,45 @@ export default function Dashboard() {
       setCurrentResume(resume);
 
       if (resume) {
+        setIsSamplePreview(false);
         const count = resume.lines_count || resume.line_budget || 38;
         setLinesUsed(count);
         setIsPageOverflow(resume.is_one_page_safe === false || count > 42);
+
+        const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Engineer');
+        const formattedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+
+        setResumeData({
+          name: formattedName,
+          title: 'Full-Stack Software Engineer',
+          contact: {
+            email: user?.email || 'developer@example.com',
+            phone: '+1 (555) 019-2834',
+            location: 'Remote / US',
+            github: githubState.githubUsername ? `github.com/${githubState.githubUsername}` : 'github.com/developer',
+            website: 'portfolio.dev',
+          },
+          summary:
+            'Impact-focused Full-Stack Engineer designing high-performance distributed web architectures, high-throughput APIs, and AI-assisted automation pipelines.',
+          projects: [
+            {
+              name: 'Resume Auto-Updater & ATS Optimizer',
+              tech: 'React, Tailwind CSS, FastAPI, PostgreSQL, Gemini AI',
+              link: `github.com/${githubState.githubUsername || 'developer'}/resume-auto-updater`,
+              highlights: [
+                'Engineered continuous GitHub repository sync that automatically parses commits, generates verified skill impact bullets, and updates resume builds.',
+                'Maintained strict 1-page line budget protection and ATS keyword matching score >90%.',
+              ],
+            },
+          ],
+          skills: {
+            languages: ['Python', 'TypeScript', 'JavaScript (ESNext)', 'SQL', 'Go'],
+            frameworks: ['FastAPI', 'React', 'Tailwind CSS', 'Docker', 'PostgreSQL'],
+            tools: ['Git', 'GitHub Actions', 'Gemini AI', 'Redis', 'Nginx'],
+          },
+        });
+      } else {
+        setResumeData(null);
       }
 
       if (resume && resume.id) {
@@ -150,6 +187,53 @@ export default function Dashboard() {
     } catch (err) {
       console.error('Failed to fetch current resume metadata:', err);
     }
+  };
+
+  const handleLoadSampleTemplate = () => {
+    const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Engineer');
+    const formattedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    setIsSamplePreview(true);
+    setResumeData({
+      name: formattedName,
+      title: 'Senior Full-Stack Engineer & AI Integrator',
+      contact: {
+        email: user?.email || 'developer@example.com',
+        phone: '+1 (555) 234-5678',
+        location: 'San Francisco, CA',
+        github: githubState.githubUsername ? `github.com/${githubState.githubUsername}` : 'github.com/developer',
+        website: 'portfolio.dev',
+      },
+      summary:
+        'Results-driven Full-Stack Engineer with 5+ years of experience designing scalable distributed web architectures, high-performance APIs, and AI-assisted automation pipelines.',
+      experience: [
+        {
+          role: 'Senior Software Engineer',
+          company: 'Cloud Scale Systems',
+          location: 'San Francisco, CA',
+          period: '2023 – Present',
+          highlights: [
+            'Architected automated document ingestion pipelines scaling to 150k+ transactions with 99.98% uptime.',
+            'Refactored core REST and GraphQL endpoints in Node.js and FastAPI, decreasing P99 latency from 450ms to 95ms.',
+          ],
+        },
+      ],
+      projects: [
+        {
+          name: 'Distributed Task Orchestrator',
+          tech: 'Go, Docker, Redis Streams, gRPC',
+          link: 'github.com/developer/task-mesh',
+          highlights: [
+            'Developed low-latency worker queue processing 20k background jobs per second with fault-tolerant dead-letter handling.',
+          ],
+        },
+      ],
+      skills: {
+        languages: ['JavaScript (ESNext)', 'TypeScript', 'Python', 'Go', 'SQL'],
+        frameworks: ['React', 'Next.js', 'FastAPI', 'Tailwind CSS'],
+        tools: ['PostgreSQL', 'Redis', 'Docker', 'Git/GitHub Actions'],
+      },
+    });
+    setToastMessage('Viewing sample template. Upload your own .docx resume to personalize!');
   };
 
   // Load Review Queue Pending Suggestions (Day 11)
@@ -716,12 +800,10 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={handleSimulateNewCommit}
-                  className="px-3.5 py-1.5 rounded-xl bg-khaki-light hover:bg-khaki/25 text-olive-wood font-bold transition-all border border-khaki/50 cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  className="px-3.5 py-1.5 rounded-xl bg-khaki-light/60 hover:bg-khaki-light text-olive-wood/80 hover:text-olive-wood font-bold transition-all border border-khaki/50 cursor-pointer flex items-center gap-1.5 shadow-2xs"
                 >
-                  <svg className="w-3.5 h-3.5 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span>Simulate GitHub Commit</span>
+                  <span className="text-sage font-bold">+</span>
+                  <span>Test New Commit Flow</span>
                 </button>
               </div>
             )}
@@ -792,12 +874,27 @@ export default function Dashboard() {
             {/* TAB CONTENT AREA with Smooth Fade-in Transitions (transition-opacity duration-200) */}
             {activeTab === 'preview' && (
               <div className="space-y-4 transition-opacity duration-200 ease-in-out animate-fade-in">
+                {isSamplePreview && (
+                  <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">💡</span>
+                      <span>Viewing Sample Template Preview. Upload your own .docx resume to personalize and sync.</span>
+                    </div>
+                    <Link to="/upload" className="font-extrabold underline hover:text-amber-950 ml-2">
+                      Upload Resume Now →
+                    </Link>
+                  </div>
+                )}
                 <ResumeActionBar
                   lastUpdated="Updated just now"
                   onRegenerate={handleUpdateResume}
                   isRegenerating={isRegenerating}
                 />
-                <ResumePreview data={resumeData} isEmpty={!currentResume && !resumeData} />
+                <ResumePreview
+                  data={resumeData}
+                  isEmpty={!currentResume && !resumeData}
+                  onLoadSampleClick={handleLoadSampleTemplate}
+                />
               </div>
             )}
 

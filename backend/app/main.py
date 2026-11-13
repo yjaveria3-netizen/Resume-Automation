@@ -56,7 +56,11 @@ app = FastAPI(
 )
 
 # CORS Middleware setup with dynamic CORS_ORIGINS from env
-allowed_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",") if origin.strip()]
+raw_origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000,http://localhost:8080",
+)
+allowed_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 if settings.FRONTEND_URL and settings.FRONTEND_URL not in allowed_origins:
     allowed_origins.append(settings.FRONTEND_URL)
 
@@ -68,6 +72,7 @@ app.add_middleware(StructuredLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins if allowed_origins else ["*"],
+    allow_origin_regex=r"https?://.*" if settings.ENV != "production" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
