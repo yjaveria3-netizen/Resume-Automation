@@ -63,6 +63,9 @@ export const signup = async (email, password) => {
     }
     return data;
   } catch (error) {
+    if (error.message?.includes('Load failed') || error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
+      throw new Error('Cannot connect to the backend server. Please ensure the backend is running at ' + API_BASE_URL, { cause: error });
+    }
     throw new Error(error.message || 'Signup failed. Please try again.', { cause: error });
   }
 };
@@ -93,6 +96,9 @@ export const login = async (email, password) => {
     }
     return data;
   } catch (error) {
+    if (error.message?.includes('Load failed') || error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
+      throw new Error('Cannot connect to the backend server. Please ensure the backend is running at ' + API_BASE_URL, { cause: error });
+    }
     throw new Error(error.message || 'Login failed. Invalid credentials or server error.', {
       cause: error,
     });

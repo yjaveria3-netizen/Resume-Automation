@@ -8,5 +8,12 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     allowedHosts: true,
+    proxy: {
+      '/auth': 'http://127.0.0.1:8000',
+      '/resumes': 'http://127.0.0.1:8000',
+      '/projects': 'http://127.0.0.1:8000',
+      '/suggestions': 'http://127.0.0.1:8000',
+      '/webhooks': 'http://127.0.0.1:8000',
+    },
   },
 })

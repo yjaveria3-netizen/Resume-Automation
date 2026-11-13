@@ -490,6 +490,52 @@ export default function Dashboard() {
 
   // Trigger Full AI Regeneration Pipeline
   const handleUpdateResume = async () => {
+    // Check if user has uploaded a master resume file
+    if (!currentResume) {
+      if (isSamplePreview) {
+        // In sample template preview mode, simulate regeneration so the user can test the pipeline UI
+        setIsRegenerating(true);
+        setRegenerationFinished(false);
+        setRegenerationError(null);
+        setRegenerationResult(null);
+
+        setTimeout(() => {
+          const sampleBullets = [
+            'Architected asynchronous message processing and real-time caching engine with FastAPI and Redis, cutting p95 response time by 38%.',
+            'Engineered automated 1-page line budget protection and ATS score optimizer, boosting recruiter keyword visibility to 96%.',
+          ];
+          setResumeData((prev) => ({
+            ...prev,
+            projects: [
+              {
+                name: 'Cloud-Scale Pipeline Optimizer (AI Sync)',
+                tech: 'Python, FastAPI, Redis, Docker, Tailwind CSS',
+                link: `github.com/${githubState.githubUsername || 'developer'}/cloud-pipeline`,
+                highlights: sampleBullets,
+              },
+              ...(prev?.projects || []),
+            ],
+          }));
+          setRegenerationResult({
+            bullets: sampleBullets,
+            ats_score: 96,
+          });
+          setAtsScore(96);
+          setAtsData((prev) => ({
+            ...prev,
+            score: 96,
+            tier: 'Strong Match',
+          }));
+          setRegenerationFinished(true);
+          setToastMessage('Sample resume refreshed with simulated AI GitHub commits!');
+        }, 2800);
+        return;
+      }
+
+      setToastMessage('Please upload a .docx resume first before running AI continuous sync.');
+      return;
+    }
+
     setIsRegenerating(true);
     setRegenerationFinished(false);
     setRegenerationError(null);
@@ -736,6 +782,13 @@ export default function Dashboard() {
                   Fetches your top GitHub commits, synthesizes bullet points with Gemini AI, and updates ATS compatibility score.
                 </p>
               </div>
+
+              {!currentResume && !isSamplePreview && (
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 font-medium flex items-center justify-between gap-2">
+                  <span>Upload a .docx resume first to enable sync</span>
+                  <Link to="/upload" className="font-bold underline text-amber-950 shrink-0">Upload</Link>
+                </div>
+              )}
 
               <button
                 type="button"

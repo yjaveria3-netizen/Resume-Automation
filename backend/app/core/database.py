@@ -1,13 +1,17 @@
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import settings
+from app.core.config import settings, BASE_DIR
+
+CANONICAL_DB_FILE = (BASE_DIR.parent / "resume_auto_updater.db").resolve()
+CANONICAL_SQLITE_URL = f"sqlite:///{CANONICAL_DB_FILE}"
 
 raw_url = (settings.DATABASE_URL or "").strip()
 
 if not raw_url:
     if settings.ENV == "production":
         raise RuntimeError("DATABASE_URL must be configured when ENV=production")
-    database_url = "sqlite:///./resume_auto_updater.db"
+    database_url = CANONICAL_SQLITE_URL
 elif raw_url.startswith("postgres://"):
     database_url = raw_url.replace("postgres://", "postgresql://", 1)
 elif raw_url.startswith("postgresql://"):
@@ -49,7 +53,7 @@ else:
         with engine.connect() as conn:
             pass
     except Exception:
-        database_url = "sqlite:///./resume_auto_updater.db"
+        database_url = CANONICAL_SQLITE_URL
         engine = create_db_engine(database_url)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
