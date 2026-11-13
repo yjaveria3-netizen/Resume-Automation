@@ -227,7 +227,8 @@ Key requirements:
         )
         db.add(jd)
         db.commit()
-
+        db.refresh(demo_user)
+        user_email = demo_user.email
         return demo_user
     finally:
         if should_close:
@@ -241,7 +242,7 @@ def main():
 
     try:
         user = reset_and_seed_demo_data(force=args.force)
-        print(f"Successfully reset and seeded demo data for {user.email}")
+        print("Successfully reset and seeded demo data for demo@resumeautoupdater.com")
     except RuntimeError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)

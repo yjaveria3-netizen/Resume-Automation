@@ -87,3 +87,34 @@ export const getDownloadUrl = (versionId) => {
   return `${API_BASE_URL}/resumes/download/${versionId}`;
 };
 
+export const matchJobDescription = async (jobDescription, resumeId = null) => {
+  const payload = { job_description: jobDescription };
+  if (resumeId) {
+    payload.resume_id = resumeId;
+  }
+  const response = await fetch(`${API_BASE_URL}/resumes/match-jd`, {
+    method: 'POST',
+    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Failed to analyze job description.');
+  }
+  return await response.json();
+};
+
+export const getUserProjects = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects`, {
+      headers: { ...getAuthHeader() },
+    });
+    if (!response.ok) return [];
+    return await response.json();
+  } catch (err) {
+    console.warn('Failed to fetch user projects:', err);
+    return [];
+  }
+};
+
+
