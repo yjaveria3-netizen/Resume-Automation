@@ -337,7 +337,7 @@ export default function Dashboard() {
           link: `github.com/developer/${newProjTitle}`,
           highlights: [bulletText],
         },
-        ...(prev.projects || []),
+        ...(prev?.projects || []),
       ],
     }));
 
@@ -396,7 +396,7 @@ export default function Dashboard() {
 
     // Optimistically replace oldest project in preview
     setResumeData((prev) => {
-      const projs = [...(prev.projects || [])];
+      const projs = [...(prev?.projects || [])];
       if (projs.length > 0) {
         projs.pop(); // Remove oldest
       }
@@ -494,7 +494,7 @@ export default function Dashboard() {
               link: `github.com/${githubState.githubUsername || 'user'}`,
               highlights: result.bullets,
             },
-            ...(prev.projects || []),
+            ...(prev?.projects || []),
           ],
         }));
       }
@@ -546,7 +546,7 @@ export default function Dashboard() {
           name: p.github_repo_name || p.name,
           tech_stack: p.tech_stack,
         }))
-      : (resumeData.projects || []).map((p, idx) => ({
+      : (resumeData?.projects || defaultResumeData?.projects || []).map((p, idx) => ({
           id: `local-p-${idx}`,
           github_repo_name: p.name,
           name: p.name,
