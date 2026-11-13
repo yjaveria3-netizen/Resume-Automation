@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ExecutiveLayout from '../components/layout/ExecutiveLayout';
 import { ResumePreview, ResumeActionBar, defaultResumeData } from '../components/preview';
 import { Link } from 'react-router-dom';
 
@@ -17,7 +18,6 @@ export default function PreviewTest() {
   };
 
   const handleDownload = (selectedFormat) => {
-    // Simulate realistic document download
     const fileName = `Alex_Morgan_Resume_v2.4.${selectedFormat}`;
     const element = document.createElement('a');
     const fileContent = `Alex Morgan - Resume Auto-Updater Build\nFormat: .${selectedFormat.toUpperCase()}\nGenerated at: ${new Date().toISOString()}`;
@@ -49,98 +49,94 @@ export default function PreviewTest() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-khaki-light/60 py-6 sm:py-8 px-3 sm:px-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <ExecutiveLayout
+      breadcrumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Preview QA Harness' }]}
+    >
+      <div className="space-y-5">
         {/* Test Suite Control Header */}
-        <div className="bg-white rounded-2xl border border-khaki/40 p-4 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-sage/20 text-sage text-xs font-bold uppercase tracking-wider">
-                Preview Test Suite
+              <span className="px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20 text-[11px] font-medium uppercase tracking-wider">
+                Preview QA Suite
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-olive-wood mt-1">
-              Resume Preview & Action Toolbar Test Harness
+            <h1 className="text-xl sm:text-2xl font-semibold text-[#ECEEF2] mt-1 tracking-tight">
+              Resume Preview & Action Toolbar
             </h1>
-            <p className="text-xs text-olive-wood/70 mt-0.5">
-              Interactive test harness for verifying US Letter proportions, shimmer states, action bar triggers, and mobile scaling.
+            <p className="text-xs text-[#9AA1AE] mt-0.5">
+              Interactive test harness for verifying US Letter proportions, shimmer states, action bar triggers, and responsive scaling.
             </p>
           </div>
 
           {/* Quick links & ATS preview badge */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="px-3 py-1.5 rounded-xl bg-khaki-light border border-khaki/40 flex items-center gap-2 text-xs font-medium text-olive-wood">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>ATS Score: <strong className="text-sage-hover">94/100</strong></span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="px-3 py-1.5 rounded-lg bg-[#0B0D12] border border-white/[0.06] flex items-center gap-2 text-xs font-medium text-[#ECEEF2]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span>
+              <span>ATS Score: <strong className="text-[#34D399] font-semibold">94/100</strong></span>
             </div>
             <Link
               to="/dashboard"
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-olive-wood hover:bg-khaki/20 border border-khaki/40 transition-colors"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#9AA1AE] hover:text-[#ECEEF2] hover:bg-[#171B24] border border-white/[0.06] transition-colors"
             >
               Dashboard
-            </Link>
-            <Link
-              to="/upload"
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-olive-wood hover:bg-khaki/20 border border-khaki/40 transition-colors"
-            >
-              Upload
             </Link>
           </div>
         </div>
 
         {/* State & Breakpoint Switcher Bar */}
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-khaki/40 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Preview State Toggle */}
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-olive-wood/70">Preview State:</span>
-            <div className="inline-flex p-1 bg-khaki-light rounded-xl border border-khaki/40">
+            <span className="text-[#9AA1AE]">Preview State:</span>
+            <div className="inline-flex p-0.5 bg-[#0B0D12] rounded-lg border border-white/[0.06]">
               <button
                 type="button"
                 onClick={() => setViewState('ready')}
-                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                   viewState === 'ready'
-                    ? 'bg-white text-olive-wood shadow-sm font-semibold'
-                    : 'text-olive-wood/70 hover:text-olive-wood'
+                    ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
                 }`}
               >
-                1. Loaded Resume
+                1. Loaded
               </button>
               <button
                 type="button"
                 onClick={() => setViewState('loading')}
-                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                   viewState === 'loading'
-                    ? 'bg-white text-olive-wood shadow-sm font-semibold'
-                    : 'text-olive-wood/70 hover:text-olive-wood'
+                    ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
                 }`}
               >
-                2. Loading Shimmer
+                2. Loading
               </button>
               <button
                 type="button"
                 onClick={() => setViewState('empty')}
-                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                   viewState === 'empty'
-                    ? 'bg-white text-olive-wood shadow-sm font-semibold'
-                    : 'text-olive-wood/70 hover:text-olive-wood'
+                    ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
                 }`}
               >
-                3. Empty State
+                3. Empty
               </button>
             </div>
           </div>
 
           {/* Viewport Frame Simulator */}
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-olive-wood/70">Test Viewport:</span>
-            <div className="inline-flex p-1 bg-khaki-light rounded-xl border border-khaki/40">
+            <span className="text-[#9AA1AE]">Test Viewport:</span>
+            <div className="inline-flex p-0.5 bg-[#0B0D12] rounded-lg border border-white/[0.06]">
               <button
                 type="button"
                 onClick={() => setDeviceFrame('responsive')}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                   deviceFrame === 'responsive'
-                    ? 'bg-white text-olive-wood shadow-sm font-semibold'
-                    : 'text-olive-wood/70 hover:text-olive-wood'
+                    ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
                 }`}
                 title="Full Responsive Width"
               >
@@ -149,10 +145,10 @@ export default function PreviewTest() {
               <button
                 type="button"
                 onClick={() => setDeviceFrame('tablet')}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                   deviceFrame === 'tablet'
-                    ? 'bg-white text-olive-wood shadow-sm font-semibold'
-                    : 'text-olive-wood/70 hover:text-olive-wood'
+                    ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
                 }`}
                 title="Simulate Tablet (768px)"
               >
@@ -161,10 +157,10 @@ export default function PreviewTest() {
               <button
                 type="button"
                 onClick={() => setDeviceFrame('mobile')}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
                   deviceFrame === 'mobile'
-                    ? 'bg-white text-olive-wood shadow-sm font-semibold'
-                    : 'text-olive-wood/70 hover:text-olive-wood'
+                    ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
                 }`}
                 title="Simulate Mobile (375px)"
               >
@@ -195,15 +191,15 @@ export default function PreviewTest() {
           <div
             className={`transition-all duration-300 ${
               deviceFrame === 'mobile'
-                ? 'w-[375px] border-4 border-olive-wood/30 rounded-3xl p-3 bg-white shadow-2xl overflow-x-hidden'
+                ? 'w-[375px] border border-white/[0.12] rounded-2xl p-3 bg-[#0B0D12] shadow-xl overflow-x-hidden'
                 : deviceFrame === 'tablet'
-                ? 'w-[768px] border-4 border-olive-wood/30 rounded-3xl p-4 bg-white shadow-2xl overflow-x-hidden'
+                ? 'w-[768px] border border-white/[0.12] rounded-2xl p-4 bg-[#0B0D12] shadow-xl overflow-x-hidden'
                 : 'w-full'
             }`}
             style={deviceFrame === 'responsive' ? { transform: `scale(${scale / 100})`, transformOrigin: 'top center' } : {}}
           >
             {deviceFrame !== 'responsive' && (
-              <div className="text-[10px] uppercase font-bold text-center text-olive-wood/40 pb-2 mb-2 border-b border-khaki/30">
+              <div className="text-[10px] uppercase font-medium text-center text-[#6B7280] pb-2 mb-2 border-b border-white/[0.06]">
                 Simulated {deviceFrame.toUpperCase()} Viewport ({deviceFrame === 'mobile' ? '375px' : '768px'})
               </div>
             )}
@@ -227,13 +223,11 @@ export default function PreviewTest() {
 
       {/* Floating Notification Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-olive-wood text-white px-4 py-3 rounded-2xl shadow-xl border border-khaki/30 flex items-center gap-2.5 text-xs animate-bounce">
-          <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="font-medium">{toastMessage}</span>
+        <div className="fixed bottom-6 right-6 z-50 bg-[#12151C] text-[#ECEEF2] px-4 py-2.5 rounded-xl shadow-lg border border-white/[0.06] flex items-center gap-2 text-xs font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
+          <span>{toastMessage}</span>
         </div>
       )}
-    </div>
+    </ExecutiveLayout>
   );
 }

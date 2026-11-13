@@ -5,17 +5,7 @@ import { mockAtsData94 } from './mockAtsData';
 
 /**
  * AtsScoreCard - Master ATS Feedback Container Component
- * 
- * Props:
- * @param {number} score - Overall ATS score (0-100)
- * @param {string} tier - Tier label ('Strong Match' | 'Moderate' | 'Needs Revision')
- * @param {object} breakdown - Sub-scores object { actionVerbs, quantifiableMetrics, keywordAlignment, formattingCleanliness }
- * @param {Array} feedback - Array of feedback items for AtsFeedbackList
- * @param {string} lastAnalyzed - Timestamp string
- * @param {function} onExport - Callback when user clicks 'Export Report'
- * @param {function} onRecalculate - Callback when user clicks 'Re-calculate'
- * @param {boolean} isAnalyzing - Loading state indicator
- * @param {string} className - Additional CSS class
+ * Calm Executive Dark Theme
  */
 export default function AtsScoreCard({
   score = mockAtsData94.score,
@@ -28,14 +18,13 @@ export default function AtsScoreCard({
   isAnalyzing = false,
   className = '',
 }) {
-  const [activeTab, setActiveTab] = useState('Overview'); // 'Overview' | 'Keyword Match' | 'Bullet Improvements'
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'pass' | 'warn' | 'fail'
+  const [activeTab, setActiveTab] = useState('Overview');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const handleExport = () => {
     if (onExport) {
       onExport({ score, tier, breakdown, feedback });
     } else {
-      // Default CSV/Report trigger
       const reportLines = [
         `ATS Resume Screening Report`,
         `Score: ${score}/100 (${tier})`,
@@ -66,7 +55,6 @@ export default function AtsScoreCard({
     }
   };
 
-  // Filter feedback items based on active tab and status filter
   const getTabFilteredFeedback = () => {
     let items = feedback;
 
@@ -82,7 +70,6 @@ export default function AtsScoreCard({
           i.tabCategory === 'Bullet Improvements'
       );
     }
-    // 'Overview' shows all items
 
     if (statusFilter !== 'all') {
       items = items.filter((i) => i.status === statusFilter);
@@ -92,46 +79,44 @@ export default function AtsScoreCard({
   };
 
   const displayedFeedback = getTabFilteredFeedback();
-
-  // Summary counts for quick inspection
   const passCount = feedback.filter((f) => f.status === 'pass').length;
   const warnCount = feedback.filter((f) => f.status === 'warn').length;
   const failCount = feedback.filter((f) => f.status === 'fail').length;
 
   return (
     <div
-      className={`bg-white rounded-3xl border border-khaki/40 shadow-sm overflow-hidden transition-all duration-300 ${className}`}
+      className={`bg-[#12151C] rounded-xl border border-white/[0.06] shadow-sm overflow-hidden transition-all text-[#ECEEF2] ${className}`}
     >
       {/* Top Header Bar */}
-      <div className="p-5 sm:p-6 bg-gradient-to-r from-khaki-light/80 to-white border-b border-khaki/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 bg-[#171B24] border-b border-white/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-sage/20 text-sage text-xs font-bold uppercase tracking-wider">
-              ATS Analysis
+            <span className="px-2 py-0.5 rounded-md bg-[#0B0D12] text-[#9AA1AE] border border-white/[0.06] text-[11px] font-medium uppercase tracking-wider">
+              ATS Screening Engine
             </span>
-            <span className="text-xs text-olive-wood/60">
+            <span className="text-xs text-[#6B7280]">
               Analyzed {lastAnalyzed || 'recently'}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-olive-wood mt-1 flex items-center gap-2">
-            <span>ATS Resume Strength & Screening</span>
+          <h2 className="text-lg sm:text-xl font-semibold text-[#ECEEF2] mt-1 tracking-tight">
+            ATS Compatibility & Keyword Alignment
           </h2>
-          <p className="text-xs text-olive-wood/70 mt-0.5">
-            Automated screening metrics modeled on top applicant tracking algorithms (Jobscan / Resume Worded).
+          <p className="text-xs text-[#9AA1AE] mt-0.5">
+            Automated screening metrics modeled on enterprise recruitment screeners (Greenhouse / Lever / Workday).
           </p>
         </div>
 
         {/* Header Action Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {onRecalculate && (
             <button
               type="button"
               onClick={onRecalculate}
               disabled={isAnalyzing}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold text-olive-wood bg-white border border-khaki/50 hover:bg-khaki/15 active:scale-95 transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#ECEEF2] bg-[#12151C] border border-white/[0.06] hover:bg-[#202531] active:scale-95 transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
             >
               <svg
-                className={`w-4 h-4 text-olive-wood/70 ${isAnalyzing ? 'animate-spin' : ''}`}
+                className={`w-3.5 h-3.5 text-[#9AA1AE] ${isAnalyzing ? 'animate-spin' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -145,9 +130,9 @@ export default function AtsScoreCard({
           <button
             type="button"
             onClick={handleExport}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-sage hover:bg-sage-hover active:scale-95 transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-white bg-[#F97316] hover:bg-[#EA580C] active:scale-95 transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <span>Export Report</span>
@@ -156,29 +141,29 @@ export default function AtsScoreCard({
       </div>
 
       {/* Main Score Hero & Metric Breakdown */}
-      <div className="p-5 sm:p-6 bg-white border-b border-khaki/30 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      <div className="p-5 sm:p-6 bg-[#12151C] border-b border-white/[0.06] grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         {/* Radial Badge Gauge Column */}
-        <div className="lg:col-span-4 flex flex-col items-center justify-center p-4 bg-khaki-light/40 rounded-2xl border border-khaki/30">
-          <AtsScoreBadge score={score} size={170} strokeWidth={13} showTier={true} />
+        <div className="lg:col-span-4 flex flex-col items-center justify-center p-4 bg-[#0B0D12] rounded-xl border border-white/[0.06]">
+          <AtsScoreBadge score={score} size={150} strokeWidth={10} showTier={true} />
           
-          <p className="text-xs text-center text-olive-wood/70 mt-3 font-medium px-2">
+          <p className="text-xs text-center text-[#9AA1AE] mt-3 font-normal px-2">
             {score >= 80
-              ? '✨ Outstanding keyword alignment and bullet impact. Ready for submission.'
+              ? 'Excellent ATS strength. High keyword match and quantified impact metrics.'
               : score >= 60
-              ? '⚠️ Good foundation. Address the amber warnings below to unlock 80+.'
-              : '🚨 Significant gaps in metrics and keywords. AI optimization recommended.'}
+              ? 'Good baseline. Address missing keywords to reach the 80+ tier.'
+              : 'Action needed: Incorporate target keywords and quantifiable metrics.'}
           </p>
 
           {/* Mini Status Pill Counters */}
-          <div className="mt-3.5 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+          <div className="mt-3 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20 text-[11px] font-medium">
               ✓ {passCount} passed
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20 text-[11px] font-medium">
               ▲ {warnCount} warnings
             </span>
             {failCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#F87171]/10 text-[#F87171] border border-[#F87171]/20 text-[11px] font-medium">
                 ✕ {failCount} critical
               </span>
             )}
@@ -186,109 +171,103 @@ export default function AtsScoreCard({
         </div>
 
         {/* 4-Pillar Score Breakdown Bars Column */}
-        <div className="lg:col-span-8 space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-olive-wood/70 flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="lg:col-span-8 space-y-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#9AA1AE] flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-[#34D399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            ATS Core Criteria Breakdown
+            ATS Evaluation Pillars
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* 1. Action Verbs */}
-            <div className="p-3.5 rounded-2xl bg-khaki-light/30 border border-khaki/30">
+            <div className="p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06]">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-olive-wood">Action Verbs Used</span>
-                <span className="font-bold text-olive-wood">
+                <span className="font-medium text-[#ECEEF2]">Action Verbs Used</span>
+                <span className="font-semibold text-[#34D399]">
                   {breakdown?.actionVerbs?.score || 0}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-khaki/20 rounded-full mt-2 overflow-hidden">
+              <div className="w-full h-1.5 bg-[#171B24] rounded-full mt-2 overflow-hidden border border-white/[0.04]">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out"
+                  className="h-full bg-[#34D399] rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${breakdown?.actionVerbs?.score || 0}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-olive-wood/60 mt-1.5">
+              <div className="flex justify-between items-center text-[10px] text-[#6B7280] mt-1.5 font-normal">
                 <span>{breakdown?.actionVerbs?.label || 'Analyzed'}</span>
                 <span>{breakdown?.actionVerbs?.count ?? 0} found / {breakdown?.actionVerbs?.target ?? 15} target</span>
               </div>
             </div>
 
             {/* 2. Quantifiable Metrics */}
-            <div className="p-3.5 rounded-2xl bg-khaki-light/30 border border-khaki/30">
+            <div className="p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06]">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-olive-wood">Quantifiable Metrics</span>
-                <span className="font-bold text-olive-wood">
+                <span className="font-medium text-[#ECEEF2]">Quantifiable Metrics</span>
+                <span className="font-semibold text-[#ECEEF2]">
                   {breakdown?.quantifiableMetrics?.score || 0}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-khaki/20 rounded-full mt-2 overflow-hidden">
+              <div className="w-full h-1.5 bg-[#171B24] rounded-full mt-2 overflow-hidden border border-white/[0.04]">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ease-out ${
                     (breakdown?.quantifiableMetrics?.score || 0) >= 80
-                      ? 'bg-emerald-500'
+                      ? 'bg-[#34D399]'
                       : (breakdown?.quantifiableMetrics?.score || 0) >= 60
-                      ? 'bg-amber-500'
-                      : 'bg-rose-500'
+                      ? 'bg-[#F97316]'
+                      : 'bg-[#F87171]'
                   }`}
                   style={{ width: `${breakdown?.quantifiableMetrics?.score || 0}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-olive-wood/60 mt-1.5">
+              <div className="flex justify-between items-center text-[10px] text-[#6B7280] mt-1.5 font-normal">
                 <span>{breakdown?.quantifiableMetrics?.label || 'Data points'}</span>
                 <span>{breakdown?.quantifiableMetrics?.count ?? 0} bullets with metrics</span>
               </div>
             </div>
 
             {/* 3. Keyword Alignment */}
-            <div className="p-3.5 rounded-2xl bg-khaki-light/30 border border-khaki/30">
+            <div className="p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06]">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-olive-wood">Keyword Alignment</span>
-                <span className="font-bold text-olive-wood">
+                <span className="font-medium text-[#ECEEF2]">Keyword Alignment</span>
+                <span className="font-semibold text-[#ECEEF2]">
                   {breakdown?.keywordAlignment?.score || 0}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-khaki/20 rounded-full mt-2 overflow-hidden">
+              <div className="w-full h-1.5 bg-[#171B24] rounded-full mt-2 overflow-hidden border border-white/[0.04]">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ease-out ${
                     (breakdown?.keywordAlignment?.score || 0) >= 80
-                      ? 'bg-emerald-500'
+                      ? 'bg-[#34D399]'
                       : (breakdown?.keywordAlignment?.score || 0) >= 60
-                      ? 'bg-amber-500'
-                      : 'bg-rose-500'
+                      ? 'bg-[#F97316]'
+                      : 'bg-[#F87171]'
                   }`}
                   style={{ width: `${breakdown?.keywordAlignment?.score || 0}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-olive-wood/60 mt-1.5">
+              <div className="flex justify-between items-center text-[10px] text-[#6B7280] mt-1.5 font-normal">
                 <span>{breakdown?.keywordAlignment?.label || 'Tech terms'}</span>
                 <span>{breakdown?.keywordAlignment?.matched ?? 0} / {breakdown?.keywordAlignment?.total ?? 25} matched</span>
               </div>
             </div>
 
             {/* 4. Formatting Cleanliness */}
-            <div className="p-3.5 rounded-2xl bg-khaki-light/30 border border-khaki/30">
+            <div className="p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06]">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-olive-wood">Formatting Cleanliness</span>
-                <span className="font-bold text-olive-wood">
+                <span className="font-medium text-[#ECEEF2]">Formatting Cleanliness</span>
+                <span className="font-semibold text-[#34D399]">
                   {breakdown?.formattingCleanliness?.score || 0}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-khaki/20 rounded-full mt-2 overflow-hidden">
+              <div className="w-full h-1.5 bg-[#171B24] rounded-full mt-2 overflow-hidden border border-white/[0.04]">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ease-out ${
-                    (breakdown?.formattingCleanliness?.score || 0) >= 80
-                      ? 'bg-emerald-500'
-                      : (breakdown?.formattingCleanliness?.score || 0) >= 60
-                      ? 'bg-amber-500'
-                      : 'bg-rose-500'
-                  }`}
+                  className="h-full bg-[#34D399] rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${breakdown?.formattingCleanliness?.score || 0}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-olive-wood/60 mt-1.5">
-                <span>Single-column US Letter</span>
+              <div className="flex justify-between items-center text-[10px] text-[#6B7280] mt-1.5 font-normal">
+                <span>Single-column Standard</span>
                 <span>{breakdown?.formattingCleanliness?.status || 'Valid'}</span>
               </div>
             </div>
@@ -297,18 +276,17 @@ export default function AtsScoreCard({
       </div>
 
       {/* Tabs & Filter Controls */}
-      <div className="px-5 sm:px-6 pt-5 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-khaki/20">
-        {/* Category Tab Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+      <div className="px-5 sm:px-6 pt-3 bg-[#171B24] flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06]">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
           {['Overview', 'Keyword Match', 'Bullet Improvements'].map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                 activeTab === tab
-                  ? 'bg-olive-wood text-white shadow-sm'
-                  : 'bg-khaki-light/70 text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'
+                  ? 'bg-[#12151C] text-[#ECEEF2] border border-white/[0.06] shadow-xs'
+                  : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
               }`}
             >
               {tab}
@@ -316,18 +294,17 @@ export default function AtsScoreCard({
           ))}
         </div>
 
-        {/* Sub-Filter (Pass / Warn / Fail) */}
-        <div className="flex items-center gap-1.5 text-xs pb-3 sm:pb-0">
-          <span className="text-olive-wood/60 font-medium text-[11px]">Filter:</span>
+        <div className="flex items-center gap-1.5 text-xs pb-2 sm:pb-0">
+          <span className="text-[#6B7280] font-normal text-[11px]">Filter:</span>
           {['all', 'pass', 'warn', 'fail'].map((st) => (
             <button
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium uppercase transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded text-[11px] font-medium uppercase transition-colors cursor-pointer ${
                 statusFilter === st
-                  ? 'bg-khaki/30 text-olive-wood font-bold border border-khaki/60'
-                  : 'text-olive-wood/60 hover:text-olive-wood'
+                  ? 'bg-[#12151C] text-[#ECEEF2] border border-white/[0.06]'
+                  : 'text-[#6B7280] hover:text-[#ECEEF2]'
               }`}
             >
               {st}
@@ -337,7 +314,7 @@ export default function AtsScoreCard({
       </div>
 
       {/* Feedback Checklist Content Area */}
-      <div className="p-5 sm:p-6 bg-white">
+      <div className="p-5 sm:p-6 bg-[#12151C]">
         <AtsFeedbackList items={displayedFeedback} />
       </div>
     </div>

@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 /**
- * SmartSwapModal Component (Day 12 1-Page Layout Protector)
+ * SmartSwapModal Component - Calm Executive Dark Theme
  *
  * Triggered when inserting a new project would exceed the 1-page line limit.
  * Asks user whether to archive their oldest project to make room, or keep both on 2 pages.
- *
- * @param {boolean} isOpen
- * @param {Function} onClose
- * @param {Function} onSwap - (archiveProjectId) => void
- * @param {Function} onKeepBoth - () => void
- * @param {string} newProjectTitle
- * @param {Array} existingProjects - list of current projects [{ id, github_repo_name, name, description }]
- * @param {boolean} isProcessing
  */
 export default function SmartSwapModal({
   isOpen,
@@ -25,14 +17,12 @@ export default function SmartSwapModal({
 }) {
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
-  // Default to first/oldest project
   useEffect(() => {
     if (existingProjects && existingProjects.length > 0) {
       setSelectedProjectId(existingProjects[existingProjects.length - 1]?.id || existingProjects[0]?.id || '');
     }
   }, [existingProjects]);
 
-  // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen && !isProcessing) {
@@ -69,12 +59,12 @@ export default function SmartSwapModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white w-full max-w-lg rounded-3xl border border-khaki/40 shadow-2xl p-4 sm:p-7 space-y-5 animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#06090E]/80 backdrop-blur-xs animate-fade-in">
+      <div className="bg-[#12151C] w-full max-w-lg rounded-xl border border-white/[0.06] shadow-xl p-6 sm:p-7 space-y-4 animate-scale-in text-[#ECEEF2]">
         {/* Header with Warning Icon */}
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-[#171B24] border border-white/[0.06] text-[#F97316] flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -84,48 +74,46 @@ export default function SmartSwapModal({
             </svg>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
-                1-Page Budget Protection
-              </span>
-            </div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-olive-wood mt-1">
+            <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">
+              1-Page Budget Protection
+            </span>
+            <h3 className="text-base font-semibold text-[#ECEEF2] mt-1">
               Smart Project Swap Recommendation
             </h3>
           </div>
         </div>
 
         {/* Informative Prompt Body */}
-        <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-200 text-xs sm:text-sm text-olive-wood/90 leading-relaxed space-y-2">
-          <p className="font-semibold text-amber-950">
-            Your resume is optimized for 1 page.
+        <div className="bg-[#0B0D12] p-3.5 rounded-lg border border-white/[0.06] text-xs sm:text-sm text-[#ECEEF2] leading-relaxed space-y-2">
+          <p className="font-medium text-[#ECEEF2]">
+            Your resume is strictly formatted for 1 page.
           </p>
-          <p>
+          <p className="text-[#9AA1AE]">
             Would you like to archive your oldest project{' '}
-            <span className="font-bold text-olive-wood bg-white px-2 py-0.5 rounded-lg border border-amber-300">
+            <span className="text-[#ECEEF2] font-medium bg-[#171B24] px-1.5 py-0.5 rounded border border-white/[0.06]">
               [{oldProjectName}]
             </span>{' '}
-            to make room for{' '}
-            <span className="font-bold text-olive-wood bg-white px-2 py-0.5 rounded-lg border border-emerald-300">
+            to preserve the 1-page layout for{' '}
+            <span className="text-[#34D399] font-medium bg-[#34D399]/10 px-1.5 py-0.5 rounded border border-[#34D399]/20">
               [{newProjectTitle}]
             </span>
             ?
           </p>
-          <p className="text-[11px] text-olive-wood/70">
-            Archived projects are safely stored in your database and can be restored at any time.
+          <p className="text-[11px] text-[#6B7280]">
+            Archived projects remain safely stored in your database and can be restored at any time.
           </p>
         </div>
 
-        {/* Optional Project Selector if multiple projects exist */}
+        {/* Project Selector if multiple projects exist */}
         {existingProjects.length > 1 && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-olive-wood/80 block">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[#ECEEF2] block">
               Choose Project to Archive:
             </label>
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="w-full text-xs text-olive-wood bg-white border border-khaki/50 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-sage"
+              className="w-full text-xs text-[#ECEEF2] bg-[#0B0D12] border border-white/[0.08] rounded-lg p-2.5 focus:outline-none focus:border-[#F97316] font-medium"
             >
               {existingProjects.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -137,23 +125,21 @@ export default function SmartSwapModal({
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2">
-          {/* Keep Both Option */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-1">
           <button
             type="button"
             onClick={handleKeepBothClick}
             disabled={isProcessing}
-            className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-white hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer text-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
+            className="px-3.5 py-1.5 rounded-lg border border-white/[0.06] bg-[#171B24] hover:bg-[#202531] text-[#9AA1AE] hover:text-[#ECEEF2] text-xs font-medium transition-colors cursor-pointer text-center disabled:opacity-50"
           >
             Keep Both (2 Pages)
           </button>
 
-          {/* Swap & Insert Primary Option */}
           <button
             type="button"
             onClick={handleSwapClick}
             disabled={isProcessing}
-            className="px-5 py-2.5 rounded-xl bg-sage hover:bg-sage-hover active:scale-[0.98] text-white text-xs font-extrabold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
+            className="px-4 py-1.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-medium shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isProcessing ? (
               <>
@@ -161,15 +147,10 @@ export default function SmartSwapModal({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
-                <span>Swapping Projects...</span>
+                <span>Swapping...</span>
               </>
             ) : (
-              <>
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-                <span>Swap & Insert</span>
-              </>
+              <span>Swap & Preserve 1-Page</span>
             )}
           </button>
         </div>

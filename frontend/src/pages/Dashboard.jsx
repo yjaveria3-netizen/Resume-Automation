@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import ExecutiveLayout from '../components/layout/ExecutiveLayout';
 import ConnectGitHubCard from '../components/github/ConnectGitHubCard';
 import ResumePreview, { defaultResumeData } from '../components/preview/ResumePreview';
 import ResumeActionBar from '../components/preview/ResumeActionBar';
@@ -22,12 +23,11 @@ import {
 } from '../api/suggestions';
 import { API_BASE_URL } from '../api/config';
 
-
 export default function Dashboard() {
   const location = useLocation();
   const user = getUser();
 
-  // Active Tab state: 'preview' | 'ats' | 'history'
+  // Active Tab state: 'preview' | 'trend' | 'ats' | 'history'
   const [activeTab, setActiveTab] = useState('preview');
 
   // GitHub integration state
@@ -44,26 +44,26 @@ export default function Dashboard() {
   const [resumeVersions, setResumeVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
 
-  // Resume Content & ATS State (null by default until resume loaded or sample requested)
+  // Resume Content & ATS State
   const [resumeData, setResumeData] = useState(null);
   const [isSamplePreview, setIsSamplePreview] = useState(false);
   const [atsScore, setAtsScore] = useState(94);
   const [atsData, setAtsData] = useState(mockAtsData94);
 
-  // Day 11 Review Queue State
+  // Review Queue State
   const [suggestions, setSuggestions] = useState([]);
   const [_loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  // Day 12 1-Page Strictness & Line Budget State
+  // 1-Page Strictness & Line Budget State
   const [linesUsed, setLinesUsed] = useState(38);
   const [isPageOverflow, setIsPageOverflow] = useState(false);
   const [userProjects, setUserProjects] = useState([]);
   const [isSwapping, setIsSwapping] = useState(false);
 
-  // Day 12 Job Description Drawer State
+  // Job Description Drawer State
   const [isJdDrawerOpen, setIsJdDrawerOpen] = useState(false);
 
-  // Day 12 Smart Swap Modal State
+  // Smart Swap Modal State
   const [smartSwapModalState, setSmartSwapModalState] = useState({
     isOpen: false,
     suggestion: null,
@@ -236,7 +236,7 @@ export default function Dashboard() {
     setToastMessage('Viewing sample template. Upload your own .docx resume to personalize!');
   };
 
-  // Load Review Queue Pending Suggestions (Day 11)
+  // Load Review Queue Pending Suggestions
   const loadSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
@@ -244,7 +244,6 @@ export default function Dashboard() {
       if (list && list.length > 0) {
         setSuggestions(list);
       } else {
-        // Fallback initial demo suggestion for testing & reviewer evaluation
         setSuggestions([
           {
             id: 'demo-sugg-initial',
@@ -275,7 +274,7 @@ export default function Dashboard() {
     }
   };
 
-  // Load User Projects for Smart Swap options (Day 12)
+  // Load User Projects for Smart Swap options
   const loadProjects = async () => {
     try {
       const projs = await getUserProjects();
@@ -300,8 +299,14 @@ export default function Dashboard() {
       if (e.key === 'Escape') {
         if (isJdDrawerOpen) {
           setIsJdDrawerOpen(false);
-        } else if (smartSwapModalState.isOpen) {
-          setSmartSwapModalState((prev) => ({ ...prev, isOpen: false }));
+        }
+        if (smartSwapModalState.isOpen) {
+          setSmartSwapModalState({
+            isOpen: false,
+            suggestion: null,
+            customBullet: null,
+            newProjectTitle: '',
+          });
         }
       }
     };
@@ -309,168 +314,17 @@ export default function Dashboard() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [isJdDrawerOpen, smartSwapModalState.isOpen]);
 
-  // Review Queue: Accept workflow (checks 1-page budget threshold)
-  const handleAcceptSuggestion = async (id, customBullet) => {
-    const sugg = suggestions.find((s) => s.id === id);
-    const bulletToUse = (customBullet || sugg?.proposed_bullet || '').trim();
+  // Connect GitHub Trigger
+  const handleConnectGitHub = () => {
+    const returnUrl = encodeURIComponent(window.location.origin + '/dashboard');
+    window.location.href = `${API_BASE_URL}/auth/github?redirect_uri=${returnUrl}`;
+  };
 
-    // Check Day 12 1-page limit:
-    // If linesUsed is near or over 42 lines, trigger SmartSwapModal!
-    if (linesUsed >= 42) {
-      setSmartSwapModalState({
-        isOpen: true,
-        suggestion: sugg,
-        customBullet: bulletToUse,
-        newProjectTitle: sugg?.repo_name || 'New GitHub Project',
-      });
+  // Disconnect GitHub
+  const handleDisconnectGitHub = async () => {
+    if (!window.confirm('Are you sure you want to disconnect GitHub? Auto-sync will be disabled.')) {
       return;
     }
-
-    await applyAcceptedSuggestion(id, bulletToUse, sugg);
-  };
-
-  const applyAcceptedSuggestion = async (id, bulletText, sugg) => {
-    try {
-      if (id && !id.startsWith('demo-')) {
-        await acceptSuggestion(id, bulletText, loadResumeData);
-      }
-    } catch (err) {
-      console.warn('Accept suggestion backend error:', err);
-    }
-
-    // Optimistically remove card from review queue
-    setSuggestions((prev) => prev.filter((s) => s.id !== id));
-
-    // Optimistically insert new project with bullet into live resume preview
-    const newProjTitle = sugg?.repo_name || 'Automated GitHub Project';
-    setResumeData((prev) => ({
-      ...prev,
-      projects: [
-        {
-          name: newProjTitle,
-          tech: 'Python, FastAPI, Docker, Tailwind CSS',
-          link: `github.com/developer/${newProjTitle}`,
-          highlights: [bulletText],
-        },
-        ...(prev?.projects || []),
-      ],
-    }));
-
-    // Update lines count (+3 lines for project title and bullet)
-    setLinesUsed((prev) => {
-      const next = prev + 3;
-      if (next > 42) setIsPageOverflow(true);
-      return next;
-    });
-
-    setToastMessage('Bullet accepted & inserted into resume preview!');
-    loadResumeData();
-  };
-
-  const handleDismissSuggestion = async (id) => {
-    try {
-      if (id && !id.startsWith('demo-')) {
-        await dismissSuggestion(id);
-      }
-    } catch (err) {
-      console.warn('Dismiss suggestion backend error:', err);
-    }
-    setSuggestions((prev) => prev.filter((s) => s.id !== id));
-    setToastMessage('Suggestion dismissed from review queue.');
-  };
-
-  const handleEditSuggestion = async (id, text) => {
-    try {
-      if (id && !id.startsWith('demo-')) {
-        await editSuggestion(id, text);
-      }
-    } catch (err) {
-      console.warn('Edit suggestion backend error:', err);
-    }
-    setSuggestions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, proposed_bullet: text } : s))
-    );
-  };
-
-  const handleSmartSwapConfirm = async (archiveProjectId) => {
-    const { suggestion, customBullet } = smartSwapModalState;
-    if (!suggestion) return;
-
-    setIsSwapping(true);
-    const bulletToUse = (customBullet || suggestion.proposed_bullet || '').trim();
-
-    try {
-      if (suggestion.id && !suggestion.id.startsWith('demo-') && archiveProjectId) {
-        await swapProjectSuggestion(suggestion.id, archiveProjectId, loadResumeData);
-      }
-    } catch (err) {
-      console.warn('Smart swap backend error:', err);
-    } finally {
-      setIsSwapping(false);
-    }
-
-    // Optimistically replace oldest project in preview
-    setResumeData((prev) => {
-      const projs = [...(prev?.projects || [])];
-      if (projs.length > 0) {
-        projs.pop(); // Remove oldest
-      }
-      return {
-        ...prev,
-        projects: [
-          {
-            name: suggestion.repo_name,
-            tech: 'Python, FastAPI, Docker',
-            link: `github.com/developer/${suggestion.repo_name}`,
-            highlights: [bulletToUse],
-          },
-          ...projs,
-        ],
-      };
-    });
-
-    setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
-    setSmartSwapModalState({ isOpen: false, suggestion: null, customBullet: null, newProjectTitle: '' });
-    setToastMessage('Smart Swap complete! Oldest project archived, 1-page budget preserved.');
-    loadResumeData();
-  };
-
-  const handleSmartSwapKeepBoth = async () => {
-    const { suggestion, customBullet } = smartSwapModalState;
-    if (!suggestion) return;
-
-    setSmartSwapModalState({ isOpen: false, suggestion: null, customBullet: null, newProjectTitle: '' });
-    await applyAcceptedSuggestion(suggestion.id, customBullet || suggestion.proposed_bullet, suggestion);
-    setIsPageOverflow(true);
-    setLinesUsed(48); // 48 / 45 lines — Overflow Risk!
-    setToastMessage('Project inserted. Resume line budget now exceeds 1 page (48/45 lines).');
-  };
-
-  const handleSimulateNewCommit = () => {
-    const randomId = 'demo-sugg-' + Date.now();
-    const newDemo = {
-      id: randomId,
-      repo_name: 'cloud-pipeline-optimizer',
-      commit_sha: Math.random().toString(36).substring(2, 9),
-      commit_message: 'feat: optimize async worker queues and Redis caching',
-      proposed_bullet:
-        'Architected asynchronous message queue pipeline using Redis and FastAPI, reducing background worker latency by 42% across 25,000 requests.',
-      status: 'pending',
-    };
-    setSuggestions((prev) => [newDemo, ...prev]);
-    setToastMessage('New GitHub commit detected! Added to Review Queue.');
-  };
-
-
-  const handleConnectGitHub = () => {
-    const userId = user?.id || '';
-    const connectUrl = `${API_BASE_URL}/auth/github/login?user_id=${userId}&redirect=true`;
-    window.location.href = connectUrl;
-  };
-
-  const handleDisconnectGitHub = async () => {
-    if (!window.confirm('Are you sure you want to disconnect your GitHub account?')) return;
-    setLoadingGithub(true);
     try {
       await disconnectGitHub();
       setGithubState({
@@ -479,30 +333,216 @@ export default function Dashboard() {
         avatarUrl: null,
         connectedAt: null,
       });
-      setToastMessage('GitHub account disconnected successfully.');
+      setToastMessage('GitHub account disconnected.');
     } catch (err) {
       console.error('Failed to disconnect GitHub:', err);
-      alert('Failed to disconnect GitHub account.');
-    } finally {
-      setLoadingGithub(false);
+      setToastMessage('Failed to disconnect GitHub account.');
     }
   };
 
-  // Trigger Full AI Regeneration Pipeline
+  // Accept a Suggestion from Review Queue
+  const handleAcceptSuggestion = async (suggestionId, modifiedBullet = null) => {
+    const suggestion = suggestions.find((s) => s.id === suggestionId);
+    const bulletToUse = modifiedBullet || suggestion?.proposed_bullet;
+
+    if (isPageOverflow || linesUsed >= 42) {
+      setSmartSwapModalState({
+        isOpen: true,
+        suggestion: suggestion,
+        customBullet: bulletToUse,
+        newProjectTitle: suggestion?.repo_name || 'New Repository Project',
+      });
+      return;
+    }
+
+    try {
+      if (!suggestionId.startsWith('demo-')) {
+        await acceptSuggestion(suggestionId, bulletToUse);
+      }
+
+      setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
+      setLinesUsed((prev) => Math.min(45, prev + 2));
+
+      setResumeData((prev) => {
+        if (!prev) return prev;
+        const currentProjects = prev.projects || [];
+        const updatedProjects = [
+          {
+            name: `${suggestion?.repo_name || 'Feature Sync'} (Recent GitHub Update)`,
+            tech: 'Python, FastAPI, Docker, Gemini AI',
+            link: `github.com/${githubState.githubUsername || 'developer'}/${suggestion?.repo_name || 'project'}`,
+            highlights: [bulletToUse],
+          },
+          ...currentProjects,
+        ];
+        return {
+          ...prev,
+          projects: updatedProjects,
+        };
+      });
+
+      setToastMessage('Accepted! Highlight added to your active resume preview.');
+    } catch (err) {
+      console.error('Failed to accept suggestion:', err);
+      setToastMessage(err.message || 'Failed to accept suggestion.');
+    }
+  };
+
+  // Smart Swap Confirm
+  const handleSmartSwapConfirm = async (oldProjectId) => {
+    setIsSwapping(true);
+    const { suggestion, customBullet } = smartSwapModalState;
+
+    try {
+      if (suggestion && !suggestion.id.startsWith('demo-')) {
+        await swapProjectSuggestion(suggestion.id, oldProjectId, customBullet);
+      }
+
+      setResumeData((prev) => {
+        if (!prev) return prev;
+        const filtered = (prev.projects || []).filter(
+          (p) => p.name !== oldProjectId && p.id !== oldProjectId
+        );
+        return {
+          ...prev,
+          projects: [
+            {
+              name: `${suggestion?.repo_name || 'Updated Project'} (Smart Swapped)`,
+              tech: 'Python, FastAPI, Gemini AI, Docker',
+              link: `github.com/${githubState.githubUsername || 'developer'}/${suggestion?.repo_name || 'repo'}`,
+              highlights: [customBullet || suggestion?.proposed_bullet],
+            },
+            ...filtered,
+          ],
+        };
+      });
+
+      setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
+      setSmartSwapModalState({
+        isOpen: false,
+        suggestion: null,
+        customBullet: null,
+        newProjectTitle: '',
+      });
+      setToastMessage('Smart Swap applied! 1-Page budget preserved.');
+    } catch (err) {
+      console.error('Failed smart swap:', err);
+      setToastMessage(err.message || 'Failed to swap project.');
+    } finally {
+      setIsSwapping(false);
+    }
+  };
+
+  // Smart Swap: Keep Both
+  const handleSmartSwapKeepBoth = async () => {
+    setIsSwapping(true);
+    const { suggestion, customBullet } = smartSwapModalState;
+
+    try {
+      if (suggestion && !suggestion.id.startsWith('demo-')) {
+        await acceptSuggestion(suggestion.id, customBullet);
+      }
+
+      setResumeData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          projects: [
+            {
+              name: `${suggestion?.repo_name || 'Feature'} (GitHub Sync)`,
+              tech: 'Python, FastAPI, Gemini AI',
+              highlights: [customBullet || suggestion?.proposed_bullet],
+            },
+            ...(prev.projects || []),
+          ],
+        };
+      });
+
+      setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
+      setLinesUsed((prev) => prev + 3);
+      setIsPageOverflow(true);
+
+      setSmartSwapModalState({
+        isOpen: false,
+        suggestion: null,
+        customBullet: null,
+        newProjectTitle: '',
+      });
+      setToastMessage('Accepted! Warning: Content now slightly exceeds strict 1-page budget.');
+    } catch (err) {
+      console.error('Failed accept:', err);
+    } finally {
+      setIsSwapping(false);
+    }
+  };
+
+  // Dismiss a Suggestion
+  const handleDismissSuggestion = async (suggestionId) => {
+    try {
+      if (!suggestionId.startsWith('demo-')) {
+        await dismissSuggestion(suggestionId);
+      }
+      setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
+      setToastMessage('Suggestion dismissed from queue.');
+    } catch (err) {
+      console.error('Failed to dismiss suggestion:', err);
+    }
+  };
+
+  // Edit inline suggestion
+  const handleEditSuggestion = async (suggestionId, newText) => {
+    try {
+      if (!suggestionId.startsWith('demo-')) {
+        await editSuggestion(suggestionId, newText);
+      }
+      setSuggestions((prev) =>
+        prev.map((s) => (s.id === suggestionId ? { ...s, proposed_bullet: newText } : s))
+      );
+    } catch (err) {
+      console.error('Failed to update suggestion inline:', err);
+    }
+  };
+
+  // Test commit simulation
+  const handleSimulateNewCommit = () => {
+    const sampleCommits = [
+      {
+        id: `mock-${Date.now()}`,
+        repo_name: 'cloud-pipeline-optimizer',
+        commit_sha: 'c3d9a1f',
+        commit_message: 'perf: optimize async task batching reducing latency from 450ms to 95ms',
+        proposed_bullet:
+          'Refactored async queue dispatching in Python and FastAPI, reducing P99 latency by 78% under 20k req/min peak load.',
+        status: 'pending',
+      },
+      {
+        id: `mock-${Date.now() + 1}`,
+        repo_name: 'vector-search-engine',
+        commit_sha: 'e5b204a',
+        commit_message: 'feat: implement in-memory HNSW index for sub-millisecond similarity lookups',
+        proposed_bullet:
+          'Built concurrent in-memory vector index in Go and gRPC, achieving sub-10ms nearest-neighbor similarity search across 500k high-dimensional embeddings.',
+        status: 'pending',
+      },
+    ];
+
+    const pick = sampleCommits[Math.floor(Math.random() * sampleCommits.length)];
+    setSuggestions((prev) => [pick, ...prev]);
+    setToastMessage(`Simulated new commit from ${pick.repo_name}! Review pending bullet.`);
+  };
+
+  // Trigger Resume Regeneration
   const handleUpdateResume = async () => {
-    // Check if user has uploaded a master resume file
-    if (!currentResume) {
-      if (isSamplePreview) {
-        // In sample template preview mode, simulate regeneration so the user can test the pipeline UI
+    if (!currentResume && !isSamplePreview) {
+      if (resumeData) {
         setIsRegenerating(true);
         setRegenerationFinished(false);
         setRegenerationError(null);
-        setRegenerationResult(null);
-
         setTimeout(() => {
+          setIsRegenerating(false);
           const sampleBullets = [
-            'Architected asynchronous message processing and real-time caching engine with FastAPI and Redis, cutting p95 response time by 38%.',
-            'Engineered automated 1-page line budget protection and ATS score optimizer, boosting recruiter keyword visibility to 96%.',
+            'Architected asynchronous background task dispatcher in FastAPI and Redis, handling 40,000 tasks/min with zero dropped packets.',
+            'Integrated OpenTelemetry structured distributed tracing across microservices, decreasing root-cause MTTR by 46%.',
           ];
           setResumeData((prev) => ({
             ...prev,
@@ -586,19 +626,6 @@ export default function Dashboard() {
     }
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   const availableProjectsForSwap =
     userProjects.length > 0
       ? userProjects.map((p) => ({
@@ -614,8 +641,26 @@ export default function Dashboard() {
           tech_stack: p.tech,
         }));
 
+  const userGreetingName = user?.name || (user?.email ? user.email.split('@')[0] : 'Engineer');
+  const formattedGreeting = userGreetingName.charAt(0).toUpperCase() + userGreetingName.slice(1);
+
+  // Top header actions slot: ONE primary action only
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      <Link
+        to="/upload"
+        className="btn-primary h-9 text-xs"
+      >
+        <span>Upload Master</span>
+      </Link>
+    </div>
+  );
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-khaki-light p-4 sm:p-6 md:p-8">
+    <ExecutiveLayout
+      breadcrumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Overview' }]}
+      actions={headerActions}
+    >
       {/* Regeneration Progress Modal */}
       <RegenerationModal
         isOpen={isRegenerating}
@@ -631,333 +676,197 @@ export default function Dashboard() {
         onRetry={handleUpdateResume}
       />
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Toast Alert */}
-        {toastMessage && (
-          <div className="p-4 rounded-2xl bg-sage/15 border border-sage/30 text-olive-wood text-xs font-semibold flex items-center justify-between shadow-xs animate-fade-in">
-            <div className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-sage text-white flex items-center justify-center text-[10px] font-bold">
-                ✓
-              </span>
-              <span>{toastMessage}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setToastMessage('')}
-              className="text-olive-wood/60 hover:text-olive-wood font-bold cursor-pointer"
-            >
-              ×
-            </button>
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="p-3.5 rounded-[12px] bg-[#12151C] border border-white/[0.08] text-[#ECEEF2] text-xs font-medium flex items-center justify-between shadow-lg animate-fade-in">
+          <div className="flex items-center gap-2.5">
+            <span className="w-4 h-4 rounded-full bg-[#34D399] text-[#0B0D12] flex items-center justify-center text-[10px] font-bold">
+              ✓
+            </span>
+            <span>{toastMessage}</span>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={() => setToastMessage('')}
+            className="text-[#6B7280] hover:text-[#ECEEF2] font-semibold cursor-pointer text-xs px-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
-        {/* Dashboard Header Bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-khaki/40 shadow-xs">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-olive-wood tracking-tight">
-              User Control Center
-            </h1>
-            <p className="text-olive-wood/70 text-xs sm:text-sm mt-0.5 font-medium">
-              Automated GitHub Resume Updater & ATS Screening Engine
-            </p>
+      {/* ================= PAGE HEADER ================= */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-tight text-[#ECEEF2]">
+            Welcome back, <span className="text-[#F97316]">{formattedGreeting}</span>
+          </h1>
+          <p className="text-sm text-[#9AA1AE] mt-0.5">
+            14 verified commits tracked. ATS compatibility at {atsScore}%.
+          </p>
+        </div>
+
+        {/* Date Filter & Sync Commits as secondary actions */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="inline-flex items-center h-10 px-3 rounded-[10px] bg-transparent border border-white/[0.12] text-xs font-medium text-[#9AA1AE]">
+            <span>Range: Last 30 Days</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Day 12 Target JD Matcher CTA Button */}
-            <button
-              type="button"
-              onClick={() => setIsJdDrawerOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-extrabold shadow-xs transition-all flex items-center gap-2 cursor-pointer ring-2 ring-sage/20 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-            >
-              <span className="text-amber-200 font-bold">■</span>
-              <span>Match Against Job Description</span>
-            </button>
+          <button
+            type="button"
+            onClick={handleUpdateResume}
+            disabled={isRegenerating}
+            className="btn-secondary text-xs h-10"
+          >
+            <span className={isRegenerating ? 'animate-spin' : ''}>⚡</span>
+            <span>{isRegenerating ? 'Syncing...' : 'Sync Commits'}</span>
+          </button>
+        </div>
+      </div>
 
-            <Link
-              to="/upload"
-              className="px-4 py-2.5 rounded-xl bg-white hover:bg-khaki-light text-olive-wood border border-khaki/50 text-xs font-bold shadow-xs transition-all flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-            >
-              <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Upload New Resume
-            </Link>
+      {/* ================= 4 CLEAN KPI CARDS ================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card 1: ATS Readiness Score */}
+        <div className="bg-[#12151C] rounded-[16px] border border-white/[0.06] p-6 space-y-3.5 hover:border-white/[0.12] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-[0.04em] text-[#6B7280]">
+              ATS Readiness
+            </span>
+            <span className="text-xs text-[#34D399] font-medium">+12.4% vs baseline</span>
+          </div>
+          <div className="text-[30px] font-semibold text-[#ECEEF2] tracking-tight tabular-nums">
+            {atsScore} / 100
+          </div>
+          <div className="w-full bg-white/[0.06] rounded-full h-1 overflow-hidden">
+            <div
+              className="bg-[#F97316] h-full rounded-full transition-all duration-500"
+              style={{ width: `${atsScore}%` }}
+            />
           </div>
         </div>
 
-        {/* Desktop Split-Pane Layout (1/3 Sidebar, 2/3 Main Area) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* ================= LEFT SIDEBAR (1/3 Width) ================= */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* 1. User Welcome Card */}
-            <div className="bg-white p-5 rounded-3xl border border-khaki/40 shadow-xs space-y-3">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-sage/20 text-sage flex items-center justify-center font-extrabold text-lg border border-sage/30 shadow-xs">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <div className="overflow-hidden">
-                  <h3 className="text-base font-bold text-olive-wood">{user?.name || 'Welcome User'}</h3>
-                  <p className="text-xs text-olive-wood/60 font-medium truncate max-w-[180px] block" title={user?.email || 'user@example.com'}>
-                    {user?.email || 'user@example.com'}
-                  </p>
-                </div>
-              </div>
-              <div className="pt-2.5 border-t border-khaki/20 flex items-center justify-between text-xs">
-                <span className="text-olive-wood/60 font-medium">Account Status:</span>
-                <span className="font-bold text-sage-hover bg-sage/15 px-2.5 py-0.5 rounded-full border border-sage/30 text-[11px]">
-                  Active Member
-                </span>
-              </div>
-            </div>
-
-            {/* 2. Connected GitHub Status Card */}
-            <ConnectGitHubCard
-              isConnected={githubState.isConnected}
-              githubUsername={githubState.githubUsername}
-              avatarUrl={githubState.avatarUrl}
-              onConnect={handleConnectGitHub}
-              onDisconnect={handleDisconnectGitHub}
-              onResync={loadGithubStatus}
-              loading={loadingGithub}
-            />
-
-            {/* 3. Active Resume Metadata Card */}
-            <div className="bg-white p-5 rounded-3xl border border-khaki/40 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-olive-wood/60">
-                  Active Base Resume
-                </span>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sage/15 text-sage border border-sage/30">
-                  .DOCX Master
-                </span>
-              </div>
-
-              {currentResume ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 p-3 bg-khaki-light/50 rounded-2xl border border-khaki/30">
-                    <div className="p-2.5 bg-sage/15 text-sage rounded-xl">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-bold text-olive-wood truncate">
-                        {currentResume.original_filename || 'Uploaded_Resume.docx'}
-                      </p>
-                      <p className="text-[11px] text-olive-wood/60 font-medium">
-                        Uploaded: {formatDate(currentResume.uploaded_at)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 bg-khaki-light/50 rounded-2xl text-center space-y-1 border border-khaki/30">
-                  <p className="text-xs font-bold text-olive-wood">No Resume File Uploaded Yet</p>
-                  <p className="text-[11px] text-olive-wood/60">
-                    Upload your .docx resume to enable AI bullet generation.
-                  </p>
-                  <Link
-                    to="/upload"
-                    className="inline-block mt-1 text-xs text-sage font-extrabold hover:underline"
-                  >
-                    Upload Now →
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Large High-Emphasis 'Update Resume' Action Trigger Button with Pulse Glow */}
-            <div className="bg-gradient-to-br from-sage/10 via-white to-khaki-light/40 p-5 rounded-3xl border-2 border-sage/40 shadow-sm space-y-3.5 relative overflow-hidden">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-sage animate-ping" />
-                <span className="text-xs font-bold uppercase tracking-wider text-sage-hover">
-                  AI Continuous Sync
-                </span>
-              </div>
-              <div>
-                <h4 className="text-base font-extrabold text-olive-wood">
-                  Trigger Resume Regeneration
-                </h4>
-                <p className="text-xs text-olive-wood/75 leading-relaxed mt-0.5">
-                  Fetches your top GitHub commits, synthesizes bullet points with Gemini AI, and updates ATS compatibility score.
-                </p>
-              </div>
-
-              {!currentResume && !isSamplePreview && (
-                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 font-medium flex items-center justify-between gap-2">
-                  <span>Upload a .docx resume first to enable sync</span>
-                  <Link to="/upload" className="font-bold underline text-amber-950 shrink-0">Upload</Link>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={handleUpdateResume}
-                disabled={isRegenerating}
-                className="w-full py-3.5 px-4 rounded-2xl bg-sage hover:bg-sage-hover active:scale-[0.99] text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer ring-4 ring-sage/20 disabled:opacity-50 hover:animate-pulse-glow focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-              >
-                <svg className="w-5 h-5 text-amber-300 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clipRule="evenodd" />
-                </svg>
-                <span>Update Resume Now</span>
-              </button>
-            </div>
+        {/* Card 2: Commits Analyzed */}
+        <div className="bg-[#12151C] rounded-[16px] border border-white/[0.06] p-6 space-y-3.5 hover:border-white/[0.12] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-[0.04em] text-[#6B7280]">
+              Commits Analyzed
+            </span>
+            <span className="text-xs text-[#34D399] font-medium">100% Synced</span>
           </div>
+          <div className="text-[30px] font-semibold text-[#ECEEF2] tracking-tight tabular-nums">
+            14 Commits
+          </div>
+          <div className="w-full bg-white/[0.06] rounded-full h-1 overflow-hidden">
+            <div className="bg-[#34D399] h-full rounded-full w-full" />
+          </div>
+        </div>
 
-          {/* ================= RIGHT MAIN AREA (2/3 Width) ================= */}
-          <div className="lg:col-span-8 space-y-6 relative">
-            {/* Lightweight CSS Confetti Shower when ATS score >= 85 */}
-            {atsScore >= 85 && (
-              <div className="pointer-events-none absolute inset-x-0 -top-6 h-48 overflow-hidden z-30 flex justify-around">
-                {[
-                  { color: '#10B981', left: '8%', delay: '0s' },
-                  { color: '#F59E0B', left: '22%', delay: '0.3s' },
-                  { color: '#8A9A86', left: '38%', delay: '0.1s' },
-                  { color: '#3B82F6', left: '54%', delay: '0.5s' },
-                  { color: '#EC4899', left: '68%', delay: '0.2s' },
-                  { color: '#8B5CF6', left: '82%', delay: '0.4s' },
-                  { color: '#10B981', left: '94%', delay: '0.6s' },
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="w-2.5 h-2.5 rounded-sm animate-confetti"
-                    style={{
-                      backgroundColor: item.color,
-                      left: item.left,
-                      animationDelay: item.delay,
-                      position: 'absolute',
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Day 12 Visual 1-Page Budget Meter */}
-            <PageBudgetMeter
-              linesUsed={linesUsed}
-              maxLines={45}
-              isOverflow={isPageOverflow}
-              onSmartSwapClick={() => {
-                if (suggestions.length > 0) {
-                  setSmartSwapModalState({
-                    isOpen: true,
-                    suggestion: suggestions[0],
-                    customBullet: suggestions[0].proposed_bullet,
-                    newProjectTitle: suggestions[0].repo_name,
-                  });
-                } else {
-                  handleSimulateNewCommit();
-                }
-              }}
+        {/* Card 3: Pending Suggestions */}
+        <div className="bg-[#12151C] rounded-[16px] border border-white/[0.06] p-6 space-y-3.5 hover:border-white/[0.12] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-[0.04em] text-[#6B7280]">
+              Pending Suggestions
+            </span>
+            <span className="text-xs text-[#9AA1AE] font-medium">
+              {suggestions.length > 0 ? 'Requires review' : 'Up to date'}
+            </span>
+          </div>
+          <div className="text-[30px] font-semibold text-[#ECEEF2] tracking-tight tabular-nums">
+            {suggestions.length} In Queue
+          </div>
+          <div className="w-full bg-white/[0.06] rounded-full h-1 overflow-hidden">
+            <div
+              className={`h-full rounded-full ${suggestions.length > 0 ? 'bg-[#F97316]' : 'bg-white/[0.12]'}`}
+              style={{ width: suggestions.length > 0 ? '50%' : '100%' }}
             />
+          </div>
+        </div>
 
-            {/* Day 11 Pending Suggestions Review Queue Card */}
-            {suggestions.length > 0 ? (
-              <SuggestionsQueueCard
-                suggestions={suggestions}
-                onAccept={handleAcceptSuggestion}
-                onDismiss={handleDismissSuggestion}
-                onEdit={handleEditSuggestion}
-              />
-            ) : (
-              <div className="p-4 rounded-2xl bg-white border border-khaki/40 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-olive-wood/75">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span className="font-medium">Review Queue is all caught up (0 pending suggestions).</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSimulateNewCommit}
-                  className="px-3.5 py-1.5 rounded-xl bg-khaki-light/60 hover:bg-khaki-light text-olive-wood/80 hover:text-olive-wood font-bold transition-all border border-khaki/50 cursor-pointer flex items-center gap-1.5 shadow-2xs focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-                >
-                  <span className="text-sage font-bold">+</span>
-                  <span>Test New Commit Flow</span>
-                </button>
-              </div>
-            )}
+        {/* Card 4: Document Budget */}
+        <div className="bg-[#12151C] rounded-[16px] border border-white/[0.06] p-6 space-y-3.5 hover:border-white/[0.12] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-[0.04em] text-[#6B7280]">
+              Document Budget
+            </span>
+            <span className="text-xs text-[#34D399] font-medium">Strictly 1 Page</span>
+          </div>
+          <div className="text-[30px] font-semibold text-[#ECEEF2] tracking-tight tabular-nums">
+            {linesUsed} / 42 Lines
+          </div>
+          <div className="w-full bg-white/[0.06] rounded-full h-1 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                isPageOverflow ? 'bg-[#F87171]' : 'bg-[#34D399]'
+              }`}
+              style={{ width: `${Math.min(100, (linesUsed / 45) * 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
 
-            {/* Header Tabs Navigation Bar */}
-            <div className="bg-white p-2 rounded-3xl border border-khaki/40 shadow-xs flex items-center justify-between gap-2 overflow-x-auto">
-              <div className="flex items-center gap-1.5 w-full">
+      {/* ================= MAIN SPLIT-PANE GRID ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* ================= LEFT 2/3 COLUMN ================= */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Main Interactive Workspace Card */}
+          <div className="bg-[#12151C] rounded-[16px] border border-white/[0.06] overflow-hidden">
+            {/* Underline Tabs Header */}
+            <div className="px-6 border-b border-white/[0.06] flex items-center justify-between">
+              <div className="flex items-center space-x-6 text-sm">
                 <button
                   type="button"
                   onClick={() => setActiveTab('preview')}
-                  className={`flex-1 min-w-[110px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
+                  className={`py-3.5 transition-colors border-b-2 cursor-pointer ${
                     activeTab === 'preview'
-                      ? 'bg-olive-wood text-white shadow-xs'
-                      : 'text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'
+                      ? 'border-[#F97316] text-[#ECEEF2] font-medium'
+                      : 'border-transparent text-[#9AA1AE] hover:text-[#ECEEF2]'
                   }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span>Live Preview</span>
+                  Live Document
                 </button>
-
                 <button
                   type="button"
-                  onClick={() => setActiveTab('ats')}
-                  className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
-                    activeTab === 'ats'
-                      ? 'bg-olive-wood text-white shadow-xs'
-                      : 'text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'
+                  onClick={() => setActiveTab('trend')}
+                  className={`py-3.5 transition-colors border-b-2 cursor-pointer ${
+                    activeTab === 'trend'
+                      ? 'border-[#F97316] text-[#ECEEF2] font-medium'
+                      : 'border-transparent text-[#9AA1AE] hover:text-[#ECEEF2]'
                   }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <span>ATS Score Breakdown</span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-white text-[10px] font-extrabold ${
-                      atsScore >= 85 ? 'bg-emerald-600 animate-pulse' : 'bg-sage'
-                    }`}
-                  >
-                    {atsScore}%
-                  </span>
+                  Analytics & Trend
                 </button>
-
                 <button
                   type="button"
                   onClick={() => setActiveTab('history')}
-                  className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
+                  className={`py-3.5 transition-colors border-b-2 cursor-pointer ${
                     activeTab === 'history'
-                      ? 'bg-olive-wood text-white shadow-xs'
-                      : 'text-olive-wood/70 hover:bg-khaki-light hover:text-olive-wood'
+                      ? 'border-[#F97316] text-[#ECEEF2] font-medium'
+                      : 'border-transparent text-[#9AA1AE] hover:text-[#ECEEF2]'
                   }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Version History</span>
-                  {resumeVersions.length > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-khaki text-olive-wood text-[10px] font-extrabold">
-                      {resumeVersions.length}
-                    </span>
-                  )}
+                  Version History
                 </button>
               </div>
             </div>
 
-            {/* TAB CONTENT AREA with Smooth Fade-in Transitions (transition-opacity duration-200) */}
+            {/* TAB 1: Live Printable Document Workspace */}
             {activeTab === 'preview' && (
-              <div className="space-y-4 transition-opacity duration-200 ease-in-out animate-fade-in">
+              <div className="p-6 space-y-4">
                 {isSamplePreview && (
-                  <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center justify-between shadow-2xs">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">💡</span>
-                      <span>Viewing Sample Template Preview. Upload your own .docx resume to personalize and sync.</span>
-                    </div>
-                    <Link to="/upload" className="font-extrabold underline hover:text-amber-950 ml-2">
-                      Upload Resume Now →
+                  <div className="p-3 rounded-[10px] bg-white/[0.04] border border-white/[0.08] text-[#9AA1AE] text-xs flex items-center justify-between">
+                    <span>Viewing sample candidate template. Upload your own .docx resume to activate continuous sync.</span>
+                    <Link to="/upload" className="font-medium text-[#ECEEF2] hover:text-[#F97316] ml-2">
+                      Upload .docx →
                     </Link>
                   </div>
                 )}
+
                 <ResumeActionBar
-                  lastUpdated="Updated just now"
+                  lastUpdated="Generated just now"
                   onRegenerate={handleUpdateResume}
-                  isRegenerating={isRegenerating}
+                  isGenerating={isRegenerating}
                 />
+
                 <ResumePreview
                   data={resumeData}
                   isEmpty={!currentResume && !resumeData}
@@ -966,22 +875,84 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === 'ats' && (
-              <div className="transition-opacity duration-200 ease-in-out animate-fade-in">
-                <AtsScoreCard
-                  score={atsData.score}
-                  tier={atsData.tier}
-                  breakdown={atsData.breakdown}
-                  feedback={atsData.feedback}
-                  lastAnalyzed={atsData.lastAnalyzed}
-                  onRecalculate={handleUpdateResume}
-                  isAnalyzing={isRegenerating}
-                />
+            {/* TAB 2: Analytics & Trend Curve */}
+            {activeTab === 'trend' && (
+              <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold text-[#ECEEF2]">
+                      ATS Score Progression
+                    </h3>
+                    <p className="text-xs text-[#9AA1AE] mt-0.5">
+                      30-day performance tracking against enterprise ATS benchmarks.
+                    </p>
+                  </div>
+                  <span className="text-xs text-[#34D399] font-medium">
+                    +18.7% this month
+                  </span>
+                </div>
+
+                <div className="relative h-60 w-full bg-[#171B24] rounded-[12px] border border-white/[0.06] p-4 flex flex-col justify-between overflow-hidden">
+                  <svg className="w-full h-full" viewBox="0 0 600 200" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#F97316" stopOpacity="0.10" />
+                        <stop offset="100%" stopColor="#F97316" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <line x1="0" y1="40" x2="600" y2="40" stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
+                    <line x1="0" y1="90" x2="600" y2="90" stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
+                    <line x1="0" y1="140" x2="600" y2="140" stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
+
+                    <polygon
+                      fill="url(#curveGradient)"
+                      points="0,170 80,150 160,135 240,140 320,110 400,95 480,75 560,45 600,40 600,200 0,200"
+                    />
+
+                    <polyline
+                      fill="none"
+                      stroke="#F97316"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      points="0,170 80,150 160,135 240,140 320,110 400,95 480,75 560,45 600,40"
+                    />
+
+                    <circle cx="560" cy="45" r="4" fill="#ECEEF2" stroke="#F97316" strokeWidth="2" />
+                  </svg>
+
+                  <div className="flex justify-between text-[11px] font-mono text-[#6B7280] pt-2 border-t border-white/[0.04]">
+                    <span>Oct 15</span>
+                    <span>Oct 22</span>
+                    <span>Oct 29</span>
+                    <span>Nov 05</span>
+                    <span>Nov 12 ({atsScore}%)</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3.5 rounded-[10px] bg-[#171B24] border border-white/[0.06]">
+                    <span className="text-[11px] uppercase tracking-[0.04em] text-[#6B7280]">Action Verbs</span>
+                    <p className="text-base font-semibold text-[#ECEEF2] mt-0.5">95%</p>
+                    <span className="text-xs text-[#34D399]">18 power verbs</span>
+                  </div>
+                  <div className="p-3.5 rounded-[10px] bg-[#171B24] border border-white/[0.06]">
+                    <span className="text-[11px] uppercase tracking-[0.04em] text-[#6B7280]">Quantified Data</span>
+                    <p className="text-base font-semibold text-[#ECEEF2] mt-0.5">92%</p>
+                    <span className="text-xs text-[#34D399]">12 metrics tracked</span>
+                  </div>
+                  <div className="p-3.5 rounded-[10px] bg-[#171B24] border border-white/[0.06]">
+                    <span className="text-[11px] uppercase tracking-[0.04em] text-[#6B7280]">Keyword Overlap</span>
+                    <p className="text-base font-semibold text-[#ECEEF2] mt-0.5">96%</p>
+                    <span className="text-xs text-[#34D399]">24 of 25 matched</span>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* TAB 3: Version History */}
             {activeTab === 'history' && (
-              <div className="space-y-6 transition-opacity duration-200 ease-in-out animate-fade-in">
+              <div className="p-6 space-y-6">
                 <VersionHistoryList
                   versions={resumeVersions}
                   selectedVersionId={selectedVersion?.id}
@@ -1000,10 +971,137 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+
+          {/* Recent Suggestions & Commits Queue Card */}
+          <SuggestionsQueueCard
+            suggestions={suggestions}
+            onAccept={handleAcceptSuggestion}
+            onDismiss={handleDismissSuggestion}
+            onEdit={handleEditSuggestion}
+          />
+        </div>
+
+        {/* ================= RIGHT 1/3 SIDEBAR ================= */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* 1. ONE Target Role Card in neutral bg-surface (NOT solid orange!) */}
+          <div className="bg-[#12151C] rounded-[16px] border border-white/[0.06] p-6 space-y-4 hover:border-white/[0.12] transition-colors">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-[0.04em] text-[#6B7280]">
+                Target Role
+              </span>
+              <span className="text-xs font-medium text-[#F97316] tabular-nums">94% fit</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-[#ECEEF2]">
+                Senior Full-Stack Engineer
+              </h3>
+              <p className="text-xs text-[#9AA1AE] leading-relaxed mt-1">
+                4 high-priority technical keywords aligned with enterprise ATS benchmarks.
+              </p>
+            </div>
+
+            {/* Thin linear 94% fit indicator */}
+            <div className="w-full bg-white/[0.06] rounded-full h-1 overflow-hidden">
+              <div className="bg-[#F97316] h-full rounded-full w-[94%]" />
+            </div>
+
+            {/* Keyword chips in neutral style */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">Python</span>
+              <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">FastAPI</span>
+              <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">PostgreSQL</span>
+              <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">Docker</span>
+              <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">Redis</span>
+            </div>
+
+            {/* Secondary button: Match Target Job Description */}
+            <button
+              type="button"
+              onClick={() => setIsJdDrawerOpen(true)}
+              className="btn-secondary w-full text-xs h-9 mt-2"
+            >
+              <span>Match Target Job Description</span>
+            </button>
+          </div>
+
+          {/* 2. Connected GitHub Status Card — ONLY shown if NOT connected */}
+          {!githubState.isConnected && (
+            <ConnectGitHubCard
+              isConnected={githubState.isConnected}
+              githubUsername={githubState.githubUsername}
+              avatarUrl={githubState.avatarUrl}
+              onConnect={handleConnectGitHub}
+              onDisconnect={handleDisconnectGitHub}
+              onResync={loadGithubStatus}
+              loading={loadingGithub}
+            />
+          )}
+
+          {/* 3. Strict 1-Page Line Budget Protection Meter */}
+          <PageBudgetMeter
+            linesUsed={linesUsed}
+            maxLines={45}
+            isOverflow={isPageOverflow}
+            onSmartSwapClick={() => {
+              if (suggestions.length > 0) {
+                setSmartSwapModalState({
+                  isOpen: true,
+                  suggestion: suggestions[0],
+                  customBullet: suggestions[0].proposed_bullet,
+                  newProjectTitle: suggestions[0].repo_name,
+                });
+              } else {
+                handleSimulateNewCommit();
+              }
+            }}
+          />
+
+          {/* 4. Active Master Resume Metadata Card */}
+          <div className="bg-[#12151C] p-6 rounded-[16px] border border-white/[0.06] space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-[0.04em] text-[#6B7280]">
+                Active Master Resume
+              </span>
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06]">
+                .docx
+              </span>
+            </div>
+
+            {currentResume ? (
+              <div className="flex items-center gap-3 p-3 bg-[#171B24] rounded-[10px] border border-white/[0.06]">
+                <div className="p-2 bg-white/[0.04] text-[#9AA1AE] rounded-[8px] border border-white/[0.06]">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="overflow-hidden">
+                  <p className="text-xs font-medium text-[#ECEEF2] truncate">
+                    {currentResume.original_filename || 'Uploaded_Resume.docx'}
+                  </p>
+                  <p className="text-[11px] text-[#6B7280] mt-0.5">
+                    Ready for commit injection
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-[#171B24] rounded-[10px] text-center space-y-1.5 border border-white/[0.06]">
+                <p className="text-xs font-medium text-[#ECEEF2]">No resume uploaded yet</p>
+                <p className="text-xs text-[#9AA1AE]">
+                  Upload your base Word document (.docx) to enable automatic bullet injection.
+                </p>
+                <Link
+                  to="/upload"
+                  className="inline-block mt-1 text-xs text-[#F97316] font-medium hover:underline"
+                >
+                  Upload now →
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Day 12 Smart Swap Modal */}
+      {/* Smart Swap Modal */}
       <SmartSwapModal
         isOpen={smartSwapModalState.isOpen}
         onClose={() =>
@@ -1021,7 +1119,7 @@ export default function Dashboard() {
         isProcessing={isSwapping}
       />
 
-      {/* Day 12 Job Description Slide-Over Drawer */}
+      {/* Job Description Slide-Over Drawer */}
       <JobDescriptionDrawer
         isOpen={isJdDrawerOpen}
         onClose={() => setIsJdDrawerOpen(false)}
@@ -1043,6 +1141,6 @@ export default function Dashboard() {
           setToastMessage(`Job Description analyzed: ${result.match_score}% fit score!`);
         }}
       />
-    </div>
+    </ExecutiveLayout>
   );
 }

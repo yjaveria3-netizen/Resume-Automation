@@ -2,6 +2,7 @@ import React from 'react';
 
 /**
  * AtsScoreBadge - Radial SVG Circular Progress Gauge for ATS Score
+ * Calm Executive Dark Theme
  * 
  * Props:
  * @param {number} score - Integer from 0 to 100
@@ -17,7 +18,6 @@ export default function AtsScoreBadge({
   showTier = true,
   className = '',
 }) {
-  // Normalize size presets to numeric pixel dimensions
   const sizeMap = {
     sm: 120,
     md: 160,
@@ -25,7 +25,7 @@ export default function AtsScoreBadge({
     xl: 240,
   };
   const numericSize = typeof size === 'number' ? size : (sizeMap[size] || 160);
-  const numericStroke = strokeWidth || (numericSize >= 200 ? 14 : numericSize >= 160 ? 12 : 9);
+  const numericStroke = strokeWidth || (numericSize >= 200 ? 12 : numericSize >= 160 ? 10 : 8);
 
   // Clamp score between 0 and 100
   const validScore = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
@@ -36,43 +36,37 @@ export default function AtsScoreBadge({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (validScore / 100) * circumference;
 
-  // Dynamic Color & Tier Logic
-  // score >= 80 -> emerald-500 (#10B981), Strong Match
-  // 60-79 -> amber-500 (#F59E0B), Moderate
-  // < 60 -> rose-500 (#F43F5E), Needs Revision
+  // Dynamic Color & Tier Logic:
+  // score >= 80 -> Green (#34D399), Strong Match
+  // 60-79 -> Orange (#F97316), Moderate
+  // < 60 -> Red (#F87171), Needs Revision
   const getTierData = (val) => {
     if (val >= 80) {
       return {
         label: 'Strong Match',
-        colorHex: '#10B981',
-        strokeClass: 'text-emerald-500',
-        bgTrackClass: 'text-emerald-500/15',
-        badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        ringGlow: 'shadow-emerald-100',
-        textColor: 'text-emerald-700',
+        colorHex: '#34D399',
+        strokeColor: '#34D399',
+        bgTrackColor: '#171B24',
+        badgeBg: 'bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20',
         icon: '✓',
       };
     }
     if (val >= 60) {
       return {
         label: 'Moderate',
-        colorHex: '#F59E0B',
-        strokeClass: 'text-amber-500',
-        bgTrackClass: 'text-amber-500/15',
-        badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
-        ringGlow: 'shadow-amber-100',
-        textColor: 'text-amber-700',
+        colorHex: '#F97316',
+        strokeColor: '#F97316',
+        bgTrackColor: '#171B24',
+        badgeBg: 'bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20',
         icon: '▲',
       };
     }
     return {
       label: 'Needs Revision',
-      colorHex: '#F43F5E',
-      strokeClass: 'text-rose-500',
-      bgTrackClass: 'text-rose-500/15',
-      badgeBg: 'bg-rose-50 text-rose-700 border-rose-200',
-      ringGlow: 'shadow-rose-100',
-      textColor: 'text-rose-700',
+      colorHex: '#F87171',
+      strokeColor: '#F87171',
+      bgTrackColor: '#171B24',
+      badgeBg: 'bg-[#F87171]/10 text-[#F87171] border border-[#F87171]/20',
       icon: '!',
     };
   };
@@ -88,7 +82,7 @@ export default function AtsScoreBadge({
         width={numericSize}
         height={numericSize}
         viewBox={`0 0 ${numericSize} ${numericSize}`}
-        className="transform -rotate-90 drop-shadow-sm"
+        className="transform -rotate-90"
       >
         {/* Background Track Ring */}
         <circle
@@ -96,9 +90,9 @@ export default function AtsScoreBadge({
           cy={center}
           r={radius}
           fill="transparent"
-          stroke="currentColor"
+          stroke={tier.bgTrackColor}
           strokeWidth={numericStroke}
-          className={`${tier.bgTrackClass} transition-colors duration-500`}
+          className="transition-colors duration-500"
         />
 
         {/* Animated Progress Foreground Ring */}
@@ -107,12 +101,12 @@ export default function AtsScoreBadge({
           cy={center}
           r={radius}
           fill="transparent"
-          stroke="currentColor"
+          stroke={tier.strokeColor}
           strokeWidth={numericStroke}
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          className={`${tier.strokeClass} transition-all duration-700 ease-out`}
+          className="transition-all duration-700 ease-out"
           style={{
             transitionProperty: 'stroke-dashoffset, stroke',
           }}
@@ -123,13 +117,13 @@ export default function AtsScoreBadge({
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-2">
         <div className="flex items-baseline justify-center">
           <span
-            className="font-extrabold tracking-tight text-olive-wood leading-none"
-            style={{ fontSize: numericSize >= 200 ? '2.75rem' : numericSize >= 160 ? '2.25rem' : '1.75rem' }}
+            className="font-bold tracking-tight text-[#ECEEF2] leading-none"
+            style={{ fontSize: numericSize >= 200 ? '2.5rem' : numericSize >= 160 ? '2rem' : '1.5rem' }}
           >
             {validScore}
           </span>
           <span
-            className="font-semibold text-olive-wood/50 ml-0.5"
+            className="font-normal text-[#9AA1AE] ml-0.5"
             style={{ fontSize: numericSize >= 160 ? '0.875rem' : '0.75rem' }}
           >
             /100
@@ -138,9 +132,9 @@ export default function AtsScoreBadge({
 
         {showTier && (
           <span
-            className={`mt-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-semibold leading-tight flex items-center gap-1 transition-all duration-300 ${tier.badgeBg}`}
+            className={`mt-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium leading-tight flex items-center gap-1 transition-all duration-300 ${tier.badgeBg}`}
           >
-            <span className="text-[10px] font-bold">{tier.icon}</span>
+            <span className="text-[10px] font-semibold">{tier.icon}</span>
             <span>{tier.label}</span>
           </span>
         )}

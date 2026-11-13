@@ -6,182 +6,160 @@ export default function Landing() {
   const authed = isAuthenticated();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-khaki-light/50 via-white to-khaki-light/30">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-28">
-        {/* Subtle background glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-sage/15 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 text-center space-y-6 sm:space-y-8">
-          {/* Top Pill Announcement */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-khaki/50 shadow-2xs text-xs font-bold text-olive-wood animate-fade-in">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-sage-hover">Enterprise Update:</span>
-            <span className="text-olive-wood/80 font-medium">Human Review Queue & 1-Page Layout Strictness</span>
+    <div className="min-h-screen bg-[#0B0D12] text-[#ECEEF2] selection:bg-[#F97316] selection:text-white">
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative overflow-hidden pt-16 pb-24 sm:pt-24 sm:pb-32 hero-radial-glow">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10 text-center space-y-8">
+          {/* Quiet Neutral Announcement Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-[#9AA1AE]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
+            <span>Continuous GitHub Sync & ATS Scoring</span>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-olive-wood tracking-tight leading-[1.15] max-w-4xl mx-auto">
-            Keep your resume <span className="text-sage underline decoration-sage/40">always in sync</span> with what you ship.
+          {/* Clean 2-Line Headline */}
+          <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-semibold text-[#ECEEF2] tracking-[-0.02em] leading-[1.1] max-w-3xl mx-auto [text-wrap:balance]">
+            Your resume, <span className="text-[#F97316]">always up to date</span>.
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg md:text-xl text-olive-wood/75 max-w-2xl mx-auto font-medium leading-relaxed">
-            Stop forgetting to update your resume. Automatically turn your GitHub commits into quantified, ATS-optimized bullet points directly inserted into your Word resume without breaking the 1-page layout.
+          {/* Calmer Subtext */}
+          <p className="text-base sm:text-lg text-[#9AA1AE] max-w-[560px] mx-auto leading-relaxed">
+            Turn your GitHub commits into quantified, ATS-optimized bullet points — inserted straight into your Word resume, still on one page.
           </p>
 
-          {/* Primary CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
+          {/* Single Primary CTA + Quiet Ghost Link */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             {authed ? (
-              <Link
-                to="/dashboard"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-sage hover:bg-sage-hover text-white text-sm font-extrabold shadow-md hover:shadow-lg transition-all active:scale-[0.99] flex items-center justify-center gap-2"
-              >
+              <Link to="/dashboard" className="btn-primary w-full sm:w-auto">
                 <span>Go to Dashboard</span>
                 <span>→</span>
               </Link>
             ) : (
-              <>
-                <Link
-                  to="/signup"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-sage hover:bg-sage-hover text-white text-sm font-extrabold shadow-md hover:shadow-lg transition-all active:scale-[0.99] flex items-center justify-center gap-2 ring-4 ring-sage/15"
-                >
-                  <span>Get Started Free</span>
-                  <span>→</span>
-                </Link>
-                <Link
-                  to="/login"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white hover:bg-khaki-light/60 text-olive-wood border border-khaki/50 text-sm font-extrabold shadow-xs transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Sign In</span>
-                </Link>
-              </>
+              <Link to="/signup" className="btn-primary w-full sm:w-auto">
+                <span>Get started free</span>
+                <span>→</span>
+              </Link>
             )}
 
-            <Link
-              to="/demo"
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-khaki-light/60 text-olive-wood/80 hover:text-olive-wood border border-khaki/40 text-sm font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <Link to="/demo" className="btn-ghost w-full sm:w-auto">
               <span>Explore Interactive Demo</span>
             </Link>
           </div>
 
-          {/* Social Proof & Trust Badges */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-olive-wood/70 font-semibold">
+          {/* 4 Feature Items — Quiet, evenly spaced text-muted row */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-[#6B7280]">
             <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg className="w-3.5 h-3.5 text-[#34D399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              Real OpenXML DOCX Updating
+              OpenXML DOCX Engine
             </span>
             <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg className="w-3.5 h-3.5 text-[#34D399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              Google Gemini AI Synthesis
+              Gemini AI Synthesis
             </span>
             <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg className="w-3.5 h-3.5 text-[#34D399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              Strict 1-Page Line Budgeting
+              1-Page Line Budgeting
             </span>
             <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg className="w-3.5 h-3.5 text-[#34D399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              Real-Time ATS Keyword Scoring
+              ATS Keyword Scoring
             </span>
           </div>
 
-          {/* Product UI Mockup Card Preview */}
-          <div className="pt-8 max-w-5xl mx-auto">
-            <div className="bg-white rounded-3xl border border-khaki/50 p-4 sm:p-6 shadow-2xl relative">
-              <div className="flex items-center justify-between pb-4 border-b border-khaki/30 text-xs">
+          {/* Product Preview Card */}
+          <div className="pt-8 max-w-4xl mx-auto relative">
+            {/* Soft subtle glow behind preview card (≤8% opacity) */}
+            <div className="absolute inset-0 bg-[#F97316]/[0.05] rounded-[24px] blur-2xl pointer-events-none transform -translate-y-2" />
+
+            <div className="relative bg-[#12151C] rounded-[16px] border border-white/[0.06] p-5 sm:p-7 shadow-2xl text-left">
+              {/* Window Bar with Neutral Gray Dots */}
+              <div className="flex items-center justify-between pb-4 border-b border-white/[0.06] text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-400" />
-                  <div className="w-3 h-3 rounded-full bg-amber-400" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                  <span className="ml-2 font-mono text-olive-wood/60">resume-auto-updater.app</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/[0.2]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/[0.2]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/[0.2]" />
+                  <span className="ml-2 font-mono text-xs text-[#6B7280]">resume-auto-updater.app</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-sage/15 text-sage font-extrabold text-[11px]">
-                  Live Synchronized Preview
+                <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-[11px]">
+                  Live Preview
                 </span>
               </div>
 
               {/* Sample Product Showcase Grid */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 pt-5 text-left items-start">
-                {/* Left Mini-Widget: New Activity Alert */}
+                {/* Left Mini-Widget: Commit Activity */}
                 <div className="md:col-span-6 space-y-4">
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-indigo-50 border border-amber-200 space-y-2">
+                  <div className="p-4 rounded-[12px] bg-[#171B24] border border-white/[0.06] space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-olive-wood flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                        ■ GitHub Commit Detected
+                      <span className="text-xs font-medium text-[#ECEEF2] flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
+                        GitHub commit detected
                       </span>
-                      <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded-md border border-amber-300">
-                        sha: 8f3a91c
+                      <span className="text-[11px] font-mono text-[#6B7280]">
+                        8f3a91c
                       </span>
                     </div>
-                    <p className="text-xs text-olive-wood/80 font-medium">
+                    <p className="text-xs text-[#ECEEF2] font-normal">
                       "feat: add distributed caching and ATS keyword analysis"
                     </p>
-                    <div className="p-2.5 rounded-xl bg-white/90 border border-khaki/40 text-xs text-olive-wood leading-relaxed font-sans">
-                      <span className="font-semibold text-sage-hover">AI Generated Bullet: </span>
+                    <div className="p-3 rounded-[8px] bg-[#12151C] border border-white/[0.06] text-xs text-[#9AA1AE] leading-relaxed">
+                      <span className="text-[#F97316] font-medium">Proposed Bullet: </span>
                       "Engineered distributed caching layer in Go and Redis, reducing P99 API latency by 45% across 20k daily requests."
                     </div>
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold shadow-2xs">
-                        ✓ Accept & Insert into Resume
+                    <div className="flex items-center justify-end pt-1">
+                      <span className="px-3 py-1 rounded-[8px] bg-white/[0.06] hover:bg-white/[0.10] text-[#ECEEF2] text-xs font-medium border border-white/[0.08] transition-colors">
+                        Insert into resume
                       </span>
                     </div>
                   </div>
 
                   {/* 1-Page Line Budget Widget */}
-                  <div className="p-4 rounded-2xl bg-white border border-khaki/40 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-xs font-extrabold">
-                      <span className="text-emerald-700 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        ■ 1-Page Optimal
+                  <div className="p-4 rounded-[12px] bg-[#171B24] border border-white/[0.06] space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#34D399] font-medium flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span>
+                        Strict 1-page layout
                       </span>
-                      <span className="text-olive-wood">38 / 45 lines used (Safe)</span>
+                      <span className="text-[#6B7280] font-mono tabular-nums">38 / 42 lines</span>
                     </div>
-                    <div className="w-full bg-khaki/20 rounded-full h-2 overflow-hidden">
-                      <div className="bg-emerald-500 h-full rounded-full w-[84%]" />
+                    <div className="w-full bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
+                      <div className="bg-[#34D399] h-full rounded-full w-[85%]" />
                     </div>
                   </div>
                 </div>
 
                 {/* Right Mini-Widget: ATS Score & Keyword Match */}
                 <div className="md:col-span-6 space-y-4">
-                  <div className="p-4 rounded-2xl bg-white border border-khaki/40 shadow-xs flex items-center justify-between gap-4">
+                  <div className="p-4 rounded-[12px] bg-[#171B24] border border-white/[0.06] flex items-center justify-between gap-4">
                     <div>
-                      <span className="text-[11px] uppercase tracking-wider font-bold text-olive-wood/60">
-                        ATS Screening Strength
+                      <span className="text-[11px] uppercase tracking-[0.04em] text-[#6B7280]">
+                        ATS Readiness Score
                       </span>
-                      <h4 className="text-2xl font-black text-olive-wood mt-0.5">94 / 100</h4>
-                      <p className="text-xs text-emerald-700 font-semibold mt-0.5">Strong Match Tier • 1-Page Guard Active</p>
+                      <div className="text-3xl font-semibold text-[#ECEEF2] mt-0.5 tabular-nums">94 / 100</div>
+                      <p className="text-xs text-[#34D399] mt-0.5">Strong match • 1-page budget preserved</p>
                     </div>
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-xl shadow-xs">
+                    <div className="w-12 h-12 rounded-[12px] bg-white/[0.04] border border-white/[0.08] text-[#34D399] flex items-center justify-center font-semibold text-lg tabular-nums">
                       94%
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-khaki-light/30 border border-khaki/40 space-y-2">
-                    <span className="text-xs font-bold text-olive-wood/80 uppercase tracking-wider block">
-                      Target Job Matcher
+                  <div className="p-4 rounded-[12px] bg-[#171B24] border border-white/[0.06] space-y-2">
+                    <span className="text-xs text-[#ECEEF2] font-medium block">
+                      Target Role Alignment
                     </span>
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">✓ Python</span>
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">✓ FastAPI</span>
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">✓ PostgreSQL</span>
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">✓ Docker</span>
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">✓ Redis</span>
-                      <span className="px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 text-[11px] font-bold">+ Kubernetes</span>
+                      <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">Python</span>
+                      <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">FastAPI</span>
+                      <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">PostgreSQL</span>
+                      <span className="px-2 py-0.5 rounded-[6px] bg-white/[0.04] text-[#9AA1AE] border border-white/[0.06] text-xs">Docker</span>
+                      <span className="px-2 py-0.5 rounded-[6px] bg-[rgba(249,115,22,0.10)] text-[#FB9233] border border-[#F97316]/20 text-xs">+ Kubernetes</span>
                     </div>
                   </div>
                 </div>
@@ -191,17 +169,14 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 sm:py-24 bg-white border-y border-khaki/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
+      {/* ================= HOW IT WORKS SECTION ================= */}
+      <section className="py-24 border-t border-white/[0.06]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">
           <div className="text-center space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-sage-hover bg-sage/15 px-3 py-1 rounded-full border border-sage/30">
-              Effortless Automation Loop
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-olive-wood tracking-tight">
-              How the Automation Works
+            <h2 className="text-2xl sm:text-3xl font-semibold text-[#ECEEF2] tracking-tight">
+              How the automation works
             </h2>
-            <p className="text-sm sm:text-base text-olive-wood/70 max-w-xl mx-auto">
+            <p className="text-sm text-[#9AA1AE] max-w-lg mx-auto">
               From code commit to recruiter-ready resume in four seamless steps.
             </p>
           </div>
@@ -211,145 +186,117 @@ export default function Landing() {
               {
                 step: '01',
                 title: 'Connect GitHub',
-                desc: 'Authorize with 1-click. The engine tracks your repositories and commits without storing plaintext credentials.',
-                badge: 'OAuth2 Secure',
+                desc: 'Authorize with one click. Tracks commits securely without storing plaintext credentials.',
               },
               {
                 step: '02',
-                title: 'Push Code as Usual',
-                desc: 'Webhooks trigger whenever you ship features, bug fixes, or infrastructure improvements to your branches.',
-                badge: 'Instant Webhooks',
+                title: 'Ship code as usual',
+                desc: 'Webhooks trigger automatically whenever you ship features, bug fixes, or infrastructure.',
               },
               {
                 step: '03',
-                title: 'AI Synthesizes Impact',
-                desc: 'Gemini analyzes your commit diffs and drafts STAR-method bullets highlighting quantifiable engineering achievements.',
-                badge: 'Gemini AI',
+                title: 'AI drafts impact',
+                desc: 'Gemini analyzes your commit diffs and synthesizes quantifiable accomplishment statements.',
               },
               {
                 step: '04',
-                title: 'Review & 1-Click Update',
-                desc: 'Approve or refine recommendations in your Review Queue. Your Word resume updates automatically without overflowing 1 page.',
-                badge: '1-Page Strictness',
+                title: 'One-click update',
+                desc: 'Review and approve suggestions. Your Word document updates without overflowing 1 page.',
               },
             ].map((card, i) => (
               <div
                 key={i}
-                className="bg-khaki-light/30 rounded-3xl p-6 border border-khaki/40 space-y-4 hover:border-sage/50 hover:bg-khaki-light/50 transition-all shadow-xs flex flex-col justify-between"
+                className="bg-[#12151C] rounded-[16px] p-6 border border-white/[0.06] space-y-4 hover:border-white/[0.12] transition-colors"
               >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-2xl font-black text-sage">
-                      {card.step}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-khaki/50 text-olive-wood/70">
-                      {card.badge}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-extrabold text-olive-wood">
-                    {card.title}
-                  </h3>
-                  <p className="text-xs text-olive-wood/75 leading-relaxed font-medium">
-                    {card.desc}
-                  </p>
-                </div>
+                <span className="font-mono text-xs text-[#F97316]">
+                  {card.step}
+                </span>
+                <h3 className="text-base font-semibold text-[#ECEEF2]">
+                  {card.title}
+                </h3>
+                <p className="text-sm text-[#9AA1AE] leading-relaxed">
+                  {card.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Feature Showcase Grid */}
-      <section className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
+      {/* ================= CORE FEATURES GRID ================= */}
+      <section className="py-24 border-t border-white/[0.06] max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">
         <div className="text-center space-y-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-sage-hover bg-sage/15 px-3 py-1 rounded-full border border-sage/30">
-            Engineered For Engineers
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-olive-wood tracking-tight">
-            Built for Developer Career Acceleration
+          <h2 className="text-2xl sm:text-3xl font-semibold text-[#ECEEF2] tracking-tight">
+            Engineered for developers
           </h2>
-          <p className="text-sm sm:text-base text-olive-wood/70 max-w-xl mx-auto">
+          <p className="text-sm text-[#9AA1AE] max-w-lg mx-auto">
             Everything you need to showcase real work to technical hiring managers and automated ATS screeners.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-7 rounded-3xl border border-khaki/40 shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xl border border-emerald-200">
-              📄
-            </div>
-            <h3 className="text-base font-extrabold text-olive-wood">Strict 1-Page Layout Protector</h3>
-            <p className="text-xs text-olive-wood/75 leading-relaxed">
-              Calculates line budgets dynamically. If a new project threatens page 2, Smart Swap prompts you to archive older projects while preserving typography.
+          <div className="bg-[#12151C] p-6 rounded-[16px] border border-white/[0.06] space-y-3 hover:border-white/[0.12] transition-colors">
+            <h3 className="text-base font-semibold text-[#ECEEF2]">Strict 1-Page Layout Protector</h3>
+            <p className="text-sm text-[#9AA1AE] leading-relaxed">
+              Dynamically calculates line counts. If a new entry risks spilling onto page 2, Smart Swap prompts you to archive older entries while preserving original typography.
             </p>
           </div>
 
-          <div className="bg-white p-7 rounded-3xl border border-khaki/40 shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xl border border-amber-200">
-              🎯
-            </div>
-            <h3 className="text-base font-extrabold text-olive-wood">Target Job Description Matcher</h3>
-            <p className="text-xs text-olive-wood/75 leading-relaxed">
-              Paste any job posting to immediately receive match score percentages, keyword coverage breakdown, and targeted tips to optimize your screening rank.
+          <div className="bg-[#121824] p-6 rounded-[16px] border border-white/[0.06] space-y-3 hover:border-white/[0.12] transition-colors">
+            <h3 className="text-base font-semibold text-[#ECEEF2]">Target Job Description Matcher</h3>
+            <p className="text-sm text-[#9AA1AE] leading-relaxed">
+              Paste any target job description to instantly see ATS keyword overlap, missing technical qualifications, and targeted phrasing recommendations.
             </p>
           </div>
 
-          <div className="bg-white p-7 rounded-3xl border border-khaki/40 shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center font-bold text-xl border border-sky-200">
-              🛡️
-            </div>
-            <h3 className="text-base font-extrabold text-olive-wood">Human-in-the-Loop Review Queue</h3>
-            <p className="text-xs text-olive-wood/75 leading-relaxed">
-              AI recommendations never touch your resume unannounced. Edit bullets inline, accept changes, or dismiss items with complete editorial autonomy.
+          <div className="bg-[#121824] p-6 rounded-[16px] border border-white/[0.06] space-y-3 hover:border-white/[0.12] transition-colors">
+            <h3 className="text-base font-semibold text-[#ECEEF2]">Editorial Review Queue</h3>
+            <p className="text-sm text-[#9AA1AE] leading-relaxed">
+              AI recommendations never touch your master resume unannounced. Edit text inline, accept suggestions, or dismiss entries with complete editorial autonomy.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Call to Action Banner */}
-      <section className="py-16 bg-gradient-to-r from-olive-wood via-olive-wood to-slate-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-            Ready to automate your engineering resume?
+      {/* ================= CALL TO ACTION BANNER ================= */}
+      <section className="py-24 bg-[#0B0D12] border-t border-white/[0.06]">
+        <div className="max-w-2xl mx-auto px-4 text-center space-y-4">
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#ECEEF2]">
+            Keep your resume current with every commit.
           </h2>
-          <p className="text-sm sm:text-base text-white/80 max-w-xl mx-auto font-medium">
-            Join engineers keeping their career portfolios effortlessly current. Create your free account in under 30 seconds.
+          <p className="text-sm text-[#9AA1AE] leading-relaxed">
+            Create an account to connect your GitHub repositories and start generating verified bullet points.
           </p>
           <div className="pt-2">
             <Link
               to={authed ? '/dashboard' : '/signup'}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-sage hover:bg-sage-hover text-white text-sm font-extrabold shadow-lg transition-all active:scale-[0.99]"
+              className="btn-primary"
             >
-              <span>{authed ? 'Open Your Dashboard' : 'Create Free Account Now'}</span>
+              <span>{authed ? 'Open Dashboard' : 'Get started free'}</span>
               <span>→</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Professional Footer */}
-      <footer className="py-10 bg-white border-t border-khaki/30 text-xs text-olive-wood/70">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-sage text-white flex items-center justify-center font-extrabold text-xs">
-              R
-            </div>
-            <span className="font-extrabold text-sm text-olive-wood">Resume Auto-Updater</span>
-            <span className="text-olive-wood/40">|</span>
-            <span>AI Continuous Sync Engine</span>
+      {/* ================= FOOTER ================= */}
+      <footer className="py-8 border-t border-white/[0.06] text-xs text-[#6B7280]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm text-[#ECEEF2]">Resume Auto-Updater</span>
           </div>
-          <div className="flex items-center gap-5 font-medium">
-            <Link to="/demo" className="hover:text-olive-wood transition-colors">
-              Product Demo
+          <div className="flex items-center gap-6">
+            <Link to="/demo" className="text-[#9AA1AE] hover:text-[#ECEEF2] transition-colors">
+              Live Showcase
             </Link>
-            <Link to="/login" className="hover:text-olive-wood transition-colors">
+            <Link to="/login" className="text-[#9AA1AE] hover:text-[#ECEEF2] transition-colors">
               Sign In
             </Link>
-            <Link to="/signup" className="hover:text-olive-wood transition-colors">
+            <Link to="/signup" className="text-[#9AA1AE] hover:text-[#ECEEF2] transition-colors">
               Sign Up
             </Link>
           </div>
-          <p className="text-olive-wood/50">
+          <p className="text-[#6B7280]">
             © {new Date().getFullYear()} Resume Auto-Updater. All rights reserved.
           </p>
         </div>

@@ -13,7 +13,7 @@ import DemoShowcase from './pages/DemoShowcase';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-khaki-light/30 flex flex-col text-olive-wood">
+      <div className="min-h-screen bg-[#0B0D12] flex flex-col text-[#ECEEF2] antialiased selection:bg-[#F97316] selection:text-white">
         <Navbar />
         <main className="flex-1">
           <Routes>
@@ -28,7 +28,7 @@ export default function App() {
               <Route path="/upload" element={<Upload />} />
             </Route>
 
-            {/* Public Showcase & QA Testing Routes (Preserved separately as requested) */}
+            {/* Public Showcase & QA Testing Routes */}
             <Route path="/demo" element={<DemoShowcase />} />
             <Route path="/qa" element={<DemoShowcase />} />
             <Route path="/preview-test" element={<PreviewTest />} />

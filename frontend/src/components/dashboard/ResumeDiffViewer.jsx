@@ -1,14 +1,10 @@
 import { useState } from 'react';
 
 /**
- * ResumeDiffViewer Component (Day 6 Feature)
+ * ResumeDiffViewer Component - Calm Executive Dark Theme
  * 
- * Provides an interactive comparison between the original resume (or previous version)
- * and the latest AI-generated resume. Features:
- * - Side-by-side and Unified split modes
- * - Highlighted bullet point additions (green) and revisions (amber/rose)
- * - ATS Score Delta badge (+X pts increase)
- * - GitHub commits & synthesized keyword tags
+ * Provides an interactive comparison between baseline resume entries and
+ * AI-generated STAR-format bullet points.
  */
 export default function ResumeDiffViewer({
   originalBullets = [],
@@ -19,10 +15,9 @@ export default function ResumeDiffViewer({
   scoreB = 94,
   githubContext: _githubContext = null,
 }) {
-  const [viewMode, setViewMode] = useState('side-by-side'); // 'side-by-side' | 'unified'
+  const [viewMode, setViewMode] = useState('side-by-side');
   const scoreDelta = scoreB - scoreA;
 
-  // Fallback sample data if none provided
   const defaultOriginal = [
     {
       project: 'Resume Auto-Updater & Webhook Pipeline',
@@ -83,8 +78,8 @@ export default function ResumeDiffViewer({
         {
           text: 'Optimized multipart streaming uploads and SQLite/PostgreSQL caching layer to handle 50MB+ file uploads with <120ms latency.',
           isNew: true,
-          type: 'revised',
-          impact: 'Replaced Basic Upload',
+          type: 'added',
+          impact: '+12% Performance',
         },
       ],
     },
@@ -94,41 +89,34 @@ export default function ResumeDiffViewer({
   const currentUpdated = aiUpdatedBullets.length > 0 ? aiUpdatedBullets : defaultUpdated;
 
   return (
-    <div className="bg-white rounded-3xl border border-khaki/40 shadow-sm overflow-hidden space-y-5 p-6 sm:p-8">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-khaki/30 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-sage animate-pulse" />
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-sage">
-              AI Diff & Impact Inspector
+    <div className="w-full bg-[#12151C] rounded-xl border border-white/[0.06] shadow-sm p-4 sm:p-6 space-y-4 text-[#ECEEF2]">
+      {/* Header bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
+            <h3 className="font-semibold text-sm sm:text-base text-[#ECEEF2]">
+              Resume Bullet Evolution & Commit Diff
+            </h3>
+            <span className="px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20 text-[11px] font-medium">
+              +{scoreDelta} pts ATS Impact
             </span>
           </div>
-          <h3 className="text-xl font-extrabold text-olive-wood">
-            Resume Changes & Bullet Point Evolution
-          </h3>
-          <p className="text-xs text-olive-wood/70 mt-0.5">
-            Compare original resume entries against AI-synthesized, ATS-optimized bullet points.
+          <p className="text-xs text-[#94A3B8]">
+            Side-by-side inspection showing how commit achievements replace passive baseline bullets
           </p>
         </div>
 
-        {/* View Mode Toggle & Score Delta */}
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sage/15 border border-sage/30 text-sage-hover font-extrabold text-xs">
-            <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            <span>ATS Score: +{scoreDelta > 0 ? scoreDelta : 30}% Improvement</span>
-          </div>
-
-          <div className="bg-khaki-light/80 p-1 rounded-xl border border-khaki/40 flex items-center gap-1">
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <div className="inline-flex rounded-lg bg-[#0B0D12] p-0.5 border border-white/[0.06]">
             <button
               type="button"
               onClick={() => setViewMode('side-by-side')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                 viewMode === 'side-by-side'
-                  ? 'bg-olive-wood text-white shadow-xs'
-                  : 'text-olive-wood/70 hover:text-olive-wood'
+                  ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                  : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
               }`}
             >
               Side-by-Side
@@ -136,66 +124,66 @@ export default function ResumeDiffViewer({
             <button
               type="button"
               onClick={() => setViewMode('unified')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                 viewMode === 'unified'
-                  ? 'bg-olive-wood text-white shadow-xs'
-                  : 'text-olive-wood/70 hover:text-olive-wood'
+                  ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                  : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
               }`}
             >
-              Unified Diff
+              Unified
             </button>
           </div>
         </div>
       </div>
 
       {/* Legend & Summary Statistics Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-khaki-light/40 p-3.5 rounded-2xl border border-khaki/30 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-[#0B0D12] p-2.5 rounded-lg border border-white/[0.06] text-xs">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-md bg-emerald-500/20 border border-emerald-500 inline-block" />
-          <span className="font-semibold text-olive-wood">AI-Synthesized Bullet</span>
+          <span className="w-2 h-2 rounded-sm bg-[#34D399] inline-block" />
+          <span className="text-[#9AA1AE]">AI Synthesized Bullet</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-md bg-amber-500/20 border border-amber-500 inline-block" />
-          <span className="font-semibold text-olive-wood">STAR Rephrased</span>
+          <span className="w-2 h-2 rounded-sm bg-[#F97316] inline-block" />
+          <span className="text-[#9AA1AE]">STAR Rephrased</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-md bg-rose-500/20 border border-rose-500 inline-block" />
-          <span className="font-semibold text-olive-wood">Replaced / Removed</span>
+          <span className="w-2 h-2 rounded-sm bg-[#F87171] inline-block" />
+          <span className="text-[#9AA1AE]">Replaced Baseline</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-md bg-sage/20 border border-sage inline-block" />
-          <span className="font-semibold text-olive-wood">Quantified Metric Added</span>
+          <span className="w-2 h-2 rounded-sm bg-[#171B24] border border-white/[0.06] inline-block" />
+          <span className="text-[#9AA1AE]">Metrics Quantified</span>
         </div>
       </div>
 
       {/* Diff View Rendering */}
       {viewMode === 'side-by-side' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* LEFT: Original Version */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-khaki/30">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-khaki/30 text-olive-wood text-xs font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-[#0B0D12] text-[#9AA1AE] text-xs font-medium border border-white/[0.06]">
                   {versionA}
                 </span>
-                <span className="text-xs text-olive-wood/60 font-medium">Initial Baseline</span>
+                <span className="text-xs text-[#6B7280]">Initial Baseline</span>
               </div>
-              <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              <span className="text-xs font-medium text-[#F97316] bg-[#F97316]/10 px-2 py-0.5 rounded-md border border-[#F97316]/20">
                 Score: {scoreA}%
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {currentOriginal.map((proj, pIdx) => (
-                <div key={pIdx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-3">
+                <div key={pIdx} className="p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06] space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-olive-wood">{proj.project}</h4>
-                    <span className="text-[10px] text-olive-wood/60">{proj.role}</span>
+                    <h4 className="text-xs font-semibold text-[#ECEEF2]">{proj.project}</h4>
+                    <span className="text-[10px] text-[#6B7280]">{proj.role}</span>
                   </div>
-                  <ul className="space-y-2 text-xs text-olive-wood/80">
+                  <ul className="space-y-1.5 text-xs text-[#6B7280]">
                     {proj.bullets.map((b, bIdx) => (
-                      <li key={bIdx} className="flex items-start gap-2 p-2 rounded-lg bg-white border border-stone-200/60 line-through text-stone-400">
-                        <span className="text-rose-500 font-bold mt-0.5">-</span>
+                      <li key={bIdx} className="flex items-start gap-2 p-2 rounded-md bg-[#12151C] border border-white/[0.04] line-through text-[#6B7280]">
+                        <span className="text-[#F87171] font-bold mt-0.5">-</span>
                         <span className="leading-relaxed">{typeof b === 'string' ? b : b.text}</span>
                       </li>
                     ))}
@@ -206,43 +194,43 @@ export default function ResumeDiffViewer({
           </div>
 
           {/* RIGHT: AI Optimized Version */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-khaki/30">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-sage text-white text-xs font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-[#171B24] text-[#ECEEF2] border border-white/[0.06] text-xs font-medium">
                   {versionB}
                 </span>
-                <span className="text-xs text-sage-hover font-semibold">Gemini AI + GitHub Sync</span>
+                <span className="text-xs text-[#34D399]">Gemini AI + GitHub Sync</span>
               </div>
-              <span className="text-xs font-bold text-sage-hover bg-sage/20 px-2 py-0.5 rounded-full border border-sage/40">
+              <span className="text-xs font-medium text-[#34D399] bg-[#34D399]/10 px-2 py-0.5 rounded-md border border-[#34D399]/20">
                 Score: {scoreB}%
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {currentUpdated.map((proj, pIdx) => (
-                <div key={pIdx} className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200/80 space-y-3">
+                <div key={pIdx} className="p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06] shadow-xs space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-olive-wood">{proj.project}</h4>
+                    <h4 className="text-xs font-semibold text-[#ECEEF2]">{proj.project}</h4>
                     {proj.tag && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sage/20 text-sage-hover border border-sage/30">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20">
                         {proj.tag}
                       </span>
                     )}
                   </div>
-                  <ul className="space-y-2 text-xs text-olive-wood">
+                  <ul className="space-y-1.5 text-xs text-[#ECEEF2]">
                     {proj.bullets.map((b, bIdx) => {
                       const text = typeof b === 'string' ? b : b.text;
                       const impact = typeof b === 'object' ? b.impact : '+Action Metric';
                       return (
-                        <li key={bIdx} className="p-2.5 rounded-xl bg-white border border-emerald-300 shadow-2xs space-y-1.5">
+                        <li key={bIdx} className="p-2.5 rounded-md bg-[#34D399]/5 border border-[#34D399]/20 space-y-1">
                           <div className="flex items-start gap-2">
-                            <span className="text-emerald-600 font-bold mt-0.5">+</span>
-                            <span className="leading-relaxed text-olive-wood font-medium">{text}</span>
+                            <span className="text-[#34D399] font-bold mt-0.5">+</span>
+                            <span className="leading-relaxed text-[#ECEEF2] font-normal">{text}</span>
                           </div>
                           {impact && (
                             <div className="flex justify-end">
-                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sage/15 text-sage-hover border border-sage/20">
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#171B24] text-[#34D399] border border-[#34D399]/20">
                                 {impact}
                               </span>
                             </div>
@@ -258,44 +246,42 @@ export default function ResumeDiffViewer({
         </div>
       ) : (
         /* UNIFIED DIFF VIEW */
-        <div className="space-y-4">
+        <div className="space-y-3">
           {currentUpdated.map((proj, pIdx) => {
             const origProj = currentOriginal[pIdx] || { bullets: [] };
             return (
-              <div key={pIdx} className="bg-stone-50 rounded-2xl border border-khaki/40 p-4.5 space-y-3">
-                <div className="flex items-center justify-between border-b border-khaki/20 pb-2">
+              <div key={pIdx} className="bg-[#0B0D12] rounded-lg border border-white/[0.06] p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-extrabold text-olive-wood">{proj.project}</h4>
+                    <h4 className="text-xs font-semibold text-[#ECEEF2]">{proj.project}</h4>
                     {proj.tag && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sage/20 text-sage-hover">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399]">
                         {proj.tag}
                       </span>
                     )}
                   </div>
-                  <span className="text-xs text-olive-wood/60">{proj.role || 'Full-Stack'}</span>
+                  <span className="text-xs text-[#6B7280]">{proj.role || 'Full-Stack'}</span>
                 </div>
 
-                <div className="space-y-2 font-mono text-xs">
-                  {/* Removed Bullets */}
+                <div className="space-y-1.5 font-mono text-xs">
                   {origProj.bullets.map((b, bIdx) => (
-                    <div key={`rem-${bIdx}`} className="p-2.5 rounded-xl bg-rose-50/80 border border-rose-200 text-rose-800 flex items-start gap-2.5">
-                      <span className="font-bold text-rose-600 select-none">-</span>
+                    <div key={`rem-${bIdx}`} className="p-2 rounded-md bg-[#F87171]/5 border border-[#F87171]/20 text-[#F87171] flex items-start gap-2">
+                      <span className="font-bold select-none">-</span>
                       <span className="font-sans line-through opacity-75">{typeof b === 'string' ? b : b.text}</span>
                     </div>
                   ))}
 
-                  {/* Added Bullets */}
                   {proj.bullets.map((b, bIdx) => {
                     const text = typeof b === 'string' ? b : b.text;
                     const impact = typeof b === 'object' ? b.impact : null;
                     return (
-                      <div key={`add-${bIdx}`} className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 flex items-start justify-between gap-2.5">
-                        <div className="flex items-start gap-2.5">
-                          <span className="font-bold text-emerald-600 select-none">+</span>
-                          <span className="font-sans font-medium">{text}</span>
+                      <div key={`add-${bIdx}`} className="p-2 rounded-md bg-[#34D399]/10 border border-[#34D399]/20 text-[#ECEEF2] flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2">
+                          <span className="font-bold text-[#34D399] select-none">+</span>
+                          <span className="font-sans font-normal">{text}</span>
                         </div>
                         {impact && (
-                          <span className="flex-shrink-0 text-[10px] font-sans font-bold px-2 py-0.5 rounded-full bg-white text-emerald-700 border border-emerald-300">
+                          <span className="shrink-0 text-[10px] font-sans font-medium px-2 py-0.5 rounded-md bg-[#171B24] text-[#34D399] border border-[#34D399]/20">
                             {impact}
                           </span>
                         )}

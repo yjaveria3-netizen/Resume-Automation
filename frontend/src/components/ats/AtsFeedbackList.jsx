@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 
 /**
  * AtsFeedbackList - Categorized ATS Insights and Actionable Suggestions List
- * 
- * Props:
- * @param {Array} items - List of feedback items:
- *    [{ id, status: 'pass'|'warn'|'fail', category: string, message: string, suggestion: string }]
- * @param {string} filterCategory - Optional category filter ('All' or specific category name)
- * @param {string} filterStatus - Optional status filter ('all' | 'pass' | 'warn' | 'fail')
- * @param {string} className - Additional CSS classes
+ * Calm Executive Dark Theme
  */
 export default function AtsFeedbackList({
   items = [],
@@ -22,7 +16,6 @@ export default function AtsFeedbackList({
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Filter items based on active filters
   const filteredItems = items.filter((item) => {
     const matchesCategory =
       filterCategory === 'All' ||
@@ -37,41 +30,41 @@ export default function AtsFeedbackList({
       case 'pass':
         return {
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+            <svg className="w-4 h-4 text-[#34D399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           ),
-          containerClass: 'bg-emerald-50/80 border-emerald-200/80 hover:border-emerald-300',
-          iconWrapClass: 'bg-emerald-500 text-white shadow-emerald-200',
-          tagClass: 'bg-emerald-100/70 text-emerald-800 border-emerald-200',
-          titleClass: 'text-emerald-950 font-semibold',
+          containerClass: 'bg-[#12151C] border-white/[0.06] hover:border-white/[0.12]',
+          iconWrapClass: 'bg-[#34D399]/10 border border-[#34D399]/20',
+          tagClass: 'bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20',
+          titleClass: 'text-[#ECEEF2] font-medium',
           statusLabel: 'Passed',
         };
       case 'warn':
         return {
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg className="w-4 h-4 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           ),
-          containerClass: 'bg-amber-50/80 border-amber-200/80 hover:border-amber-300',
-          iconWrapClass: 'bg-amber-500 text-white shadow-amber-200',
-          tagClass: 'bg-amber-100/70 text-amber-800 border-amber-200',
-          titleClass: 'text-amber-950 font-semibold',
+          containerClass: 'bg-[#12151C] border-white/[0.06] hover:border-[#F97316]/30',
+          iconWrapClass: 'bg-[#F97316]/10 border border-[#F97316]/20',
+          tagClass: 'bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20',
+          titleClass: 'text-[#ECEEF2] font-medium',
           statusLabel: 'Improvement Needed',
         };
       case 'fail':
       default:
         return {
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-4 h-4 text-[#F87171]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           ),
-          containerClass: 'bg-rose-50/80 border-rose-200/80 hover:border-rose-300',
-          iconWrapClass: 'bg-rose-500 text-white shadow-rose-200',
-          tagClass: 'bg-rose-100/70 text-rose-800 border-rose-200',
-          titleClass: 'text-rose-950 font-semibold',
+          containerClass: 'bg-[#12151C] border-white/[0.06] hover:border-[#F87171]/30',
+          iconWrapClass: 'bg-[#F87171]/10 border border-[#F87171]/20',
+          tagClass: 'bg-[#F87171]/10 text-[#F87171] border border-[#F87171]/20',
+          titleClass: 'text-[#ECEEF2] font-medium',
           statusLabel: 'Missing Requirement',
         };
     }
@@ -79,14 +72,9 @@ export default function AtsFeedbackList({
 
   if (!filteredItems.length) {
     return (
-      <div className={`p-8 text-center bg-khaki-light/40 border border-dashed border-khaki/60 rounded-2xl ${className}`}>
-        <div className="w-10 h-10 mx-auto rounded-full bg-khaki/30 text-olive-wood/60 flex items-center justify-center mb-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <p className="text-sm font-semibold text-olive-wood">No feedback items match this filter</p>
-        <p className="text-xs text-olive-wood/60 mt-0.5">Try selecting "All" categories to view all ATS recommendations.</p>
+      <div className={`p-8 text-center bg-[#0B0D12] border border-dashed border-white/[0.08] rounded-xl text-[#9AA1AE] ${className}`}>
+        <p className="text-sm font-semibold text-[#ECEEF2]">No feedback items match this filter</p>
+        <p className="text-xs text-[#6B7280] mt-0.5">Try selecting "Overview" to see all ATS recommendations.</p>
       </div>
     );
   }
@@ -96,32 +84,30 @@ export default function AtsFeedbackList({
       {filteredItems.map((item, index) => {
         const config = getStatusBadge(item.status);
         const itemId = item.id || `feedback-${index}`;
-        const isExpanded = expandedIds[itemId] ?? true; // Default open for immediate value
+        const isExpanded = expandedIds[itemId] ?? true;
 
         return (
           <div
             key={itemId}
-            className={`border rounded-2xl p-4 transition-all duration-200 shadow-sm ${config.containerClass}`}
+            className={`border rounded-xl p-4 transition-all duration-150 shadow-xs ${config.containerClass}`}
           >
-            <div className="flex items-start gap-3.5">
-              {/* Status Icon */}
+            <div className="flex items-start gap-3">
               <div
-                className={`w-7 h-7 rounded-xl flex-shrink-0 flex items-center justify-center shadow-sm mt-0.5 ${config.iconWrapClass}`}
+                className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5 ${config.iconWrapClass}`}
                 title={config.statusLabel}
               >
                 {config.icon}
               </div>
 
-              {/* Content Area */}
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold tracking-wide border uppercase ${config.tagClass}`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium tracking-wider uppercase ${config.tagClass}`}
                     >
                       {item.category}
                     </span>
-                    <span className="text-xs font-semibold text-olive-wood/60">
+                    <span className="text-xs font-normal text-[#6B7280]">
                       • {config.statusLabel}
                     </span>
                   </div>
@@ -130,28 +116,24 @@ export default function AtsFeedbackList({
                     <button
                       type="button"
                       onClick={() => toggleExpand(itemId)}
-                      className="text-xs font-medium text-olive-wood/70 hover:text-olive-wood underline decoration-khaki underline-offset-2 transition-colors cursor-pointer"
+                      className="text-xs font-medium text-[#9AA1AE] hover:text-[#ECEEF2] hover:underline transition-colors cursor-pointer"
                     >
                       {isExpanded ? 'Hide Advice' : 'View Actionable Advice'}
                     </button>
                   )}
                 </div>
 
-                {/* Primary Message */}
-                <p className={`text-sm mt-1.5 leading-relaxed ${config.titleClass}`}>
+                <p className={`text-xs sm:text-sm mt-1.5 leading-relaxed ${config.titleClass}`}>
                   {item.message}
                 </p>
 
-                {/* Actionable Suggestion Box */}
                 {item.suggestion && isExpanded && (
-                  <div className="mt-3 p-3 rounded-xl bg-white/90 border border-khaki/30 text-xs text-olive-wood shadow-2xs space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-sage-hover">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                  <div className="mt-2.5 p-3 rounded-lg bg-[#0B0D12] border border-white/[0.06] text-xs text-[#9AA1AE] space-y-1">
+                    <div className="flex items-center gap-1.5 font-medium text-[#ECEEF2]">
+                      <span className="text-[#F97316]">⚡</span>
                       <span>Recommended Action:</span>
                     </div>
-                    <p className="text-olive-wood/85 leading-relaxed pl-5">
+                    <p className="text-[#9AA1AE] leading-relaxed pl-5 font-normal">
                       {item.suggestion}
                     </p>
                   </div>

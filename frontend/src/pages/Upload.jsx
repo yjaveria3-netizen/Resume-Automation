@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import ExecutiveLayout from '../components/layout/ExecutiveLayout';
 import { uploadResume } from '../api/resumes';
 
 export default function Upload() {
@@ -18,14 +19,12 @@ export default function Upload() {
     setErrorMessage('');
     if (!file) return false;
 
-    // Strict .docx format validation
     const hasDocxExtension = file.name.toLowerCase().endsWith('.docx');
     if (!hasDocxExtension) {
       setErrorMessage('Invalid file format. Only Microsoft Word (.docx) files are supported.');
       return false;
     }
 
-    // Size validation (<5MB)
     if (file.size > MAX_FILE_SIZE) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
       setErrorMessage(`File size (${fileSizeMB} MB) exceeds maximum allowed limit of 5 MB.`);
@@ -128,169 +127,179 @@ export default function Upload() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-khaki-light/50 to-white p-4 sm:p-8 flex items-center justify-center">
-      <div className="w-full max-w-2xl bg-white rounded-3xl border border-khaki/40 p-6 sm:p-10 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-khaki/20">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-olive-wood tracking-tight">
-              Upload Master Resume
-            </h1>
-            <p className="text-olive-wood/70 text-xs sm:text-sm mt-0.5 font-medium">
-              Upload your base resume file in Word (.docx) format for AI synchronization
-            </p>
-          </div>
-          <Link
-            to="/dashboard"
-            className="text-xs text-olive-wood/60 hover:text-olive-wood font-bold self-start sm:self-auto"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
-
-        {/* Validation Error Banner */}
-        {errorMessage && (
-          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-800 text-xs font-semibold animate-fade-in shadow-2xs">
-            <svg className="w-5 h-5 flex-shrink-0 text-rose-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <div className="flex-1">{errorMessage}</div>
-          </div>
-        )}
-
-        {/* Hidden Native File Input */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileInputChange}
-          accept=".docx"
-          className="hidden"
-        />
-
-        {/* Drag and Drop Zone */}
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center transition-all cursor-pointer space-y-4 ${
-            isDragging
-              ? 'border-sage bg-sage/10 scale-[1.01]'
-              : 'border-khaki bg-khaki-light/20 hover:bg-khaki-light/40'
-          }`}
-        >
-          <div className="w-16 h-16 bg-sage/15 rounded-2xl flex items-center justify-center mx-auto text-sage shadow-xs">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-bold text-olive-wood">
-              Drag and drop your resume file here, or{' '}
-              <span className="text-sage underline decoration-sage/40">browse files</span>
-            </p>
-            <p className="text-xs text-olive-wood/60 font-medium">
-              Strictly Microsoft Word (.docx) files up to 5 MB
-            </p>
-          </div>
-        </div>
-
-        {/* Selected File Preview Card */}
-        {selectedFile && (
-          <div className="bg-khaki-light/40 rounded-2xl border border-khaki/50 p-4 flex items-center justify-between gap-4 animate-fade-in shadow-2xs">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-100 text-blue-700 rounded-xl shadow-xs">
-                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
-                  <path d="M15.2 13h-1.8l-1.4 3.6L10.6 13H8.8l2.3 5.4h1.8z" />
-                </svg>
+    <ExecutiveLayout
+      breadcrumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Upload Master' }]}
+    >
+      <div className="max-w-2xl mx-auto pt-4 pb-12">
+        <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-white/[0.06]">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />
+                <span className="text-[11px] font-medium uppercase tracking-wider text-[#9AA1AE]">
+                  Document Ingestion
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs sm:text-sm font-bold text-olive-wood truncate max-w-[220px] sm:max-w-xs">
-                    {selectedFile.name}
-                  </p>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sage/20 text-sage border border-sage/30">
-                    Ready to Upload
-                  </span>
+              <h1 className="text-xl sm:text-2xl font-semibold text-[#ECEEF2] tracking-tight mt-0.5">
+                Upload Master Resume
+              </h1>
+              <p className="text-[#9AA1AE] text-xs mt-0.5">
+                Upload your base resume file in Word (.docx) format for automated GitHub commit synchronization
+              </p>
+            </div>
+            <Link
+              to="/dashboard"
+              className="text-xs text-[#9AA1AE] hover:text-[#ECEEF2] font-medium self-start sm:self-auto flex items-center gap-1 transition-colors"
+            >
+              ← Back
+            </Link>
+          </div>
+
+          {/* Validation Error Banner */}
+          {errorMessage && (
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5 text-rose-300 text-xs font-normal animate-fade-in">
+              <svg className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div className="flex-1">{errorMessage}</div>
+            </div>
+          )}
+
+          {/* Hidden Native File Input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileInputChange}
+            accept=".docx"
+            className="hidden"
+          />
+
+          {/* Drag and Drop Zone */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border border-dashed rounded-xl p-8 sm:p-12 text-center transition-colors cursor-pointer space-y-3 ${
+              isDragging
+                ? 'border-[#F97316] bg-[#F97316]/5'
+                : 'border-white/[0.12] bg-[#0B0D12] hover:bg-white/[0.02] hover:border-white/[0.20]'
+            }`}
+          >
+            <div className="w-12 h-12 bg-[#171B24] rounded-xl border border-white/[0.06] flex items-center justify-center mx-auto text-[#ECEEF2]">
+              <svg className="w-6 h-6 text-[#9AA1AE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
+              </svg>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs sm:text-sm font-medium text-[#ECEEF2]">
+                Drag and drop your resume file here, or{' '}
+                <span className="text-[#F97316] underline underline-offset-2">browse files</span>
+              </p>
+              <p className="text-xs text-[#6B7280]">
+                Strictly Microsoft Word (.docx) files up to 5 MB
+              </p>
+            </div>
+          </div>
+
+          {/* Selected File Preview Card */}
+          {selectedFile && (
+            <div className="bg-[#0B0D12] rounded-lg border border-white/[0.06] p-3.5 flex items-center justify-between gap-3 animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#171B24] text-[#ECEEF2] rounded-lg border border-white/[0.06]">
+                  <svg className="w-4 h-4 fill-current text-[#9AA1AE]" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                    <path d="M15.2 13h-1.8l-1.4 3.6L10.6 13H8.8l2.3 5.4h1.8z" />
+                  </svg>
                 </div>
-                <p className="text-[11px] text-olive-wood/60 font-mono mt-0.5">
-                  {formatFileSize(selectedFile.size)}
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs sm:text-sm font-medium text-[#ECEEF2] truncate max-w-[200px] sm:max-w-xs">
+                      {selectedFile.name}
+                    </p>
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20">
+                      Ready
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#6B7280] font-mono mt-0.5">
+                    {formatFileSize(selectedFile.size)}
+                  </p>
+                </div>
+              </div>
+
+              {!uploading && (
+                <button
+                  type="button"
+                  onClick={handleRemoveFile}
+                  className="p-1.5 text-[#6B7280] hover:text-[#F87171] hover:bg-[#F87171]/10 rounded-lg transition-colors cursor-pointer"
+                  title="Remove file"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Upload Progress Bar */}
+          {uploading && (
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-normal text-[#9AA1AE]">
+                <span>Parsing OpenXML document structure & line budget...</span>
+                <span className="text-[#F97316] font-medium">{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-[#0B0D12] rounded-full h-1.5 overflow-hidden border border-white/[0.04]">
+                <div
+                  className="bg-[#F97316] h-1.5 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
               </div>
             </div>
+          )}
 
-            {!uploading && (
-              <button
-                type="button"
-                onClick={handleRemoveFile}
-                className="p-2 text-olive-wood/50 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-                title="Remove file"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            )}
+          {/* Actions Row */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleLoadSampleResume}
+              className="px-3.5 py-2 rounded-lg border border-white/[0.06] bg-[#171B24] hover:bg-[#202531] text-[#ECEEF2] text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>📄</span>
+              <span>Use Sample Resume (.docx)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleUploadSubmit}
+              disabled={!selectedFile || uploading}
+              className="px-5 py-2 rounded-lg bg-[#F97316] hover:bg-[#EA580C] active:scale-95 text-white text-xs font-medium shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploading ? (
+                <>
+                  <svg className="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Processing Document...</span>
+                </>
+              ) : (
+                <span>Upload & Process Resume →</span>
+              )}
+            </button>
           </div>
-        )}
-
-        {/* Upload Progress Bar */}
-        {uploading && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-olive-wood">
-              <span>Parsing document & calculating line budget...</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className="w-full bg-khaki/25 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="bg-sage h-2.5 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Actions Row */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-          <button
-            type="button"
-            onClick={handleLoadSampleResume}
-            className="px-4 py-2.5 rounded-xl border border-khaki/50 bg-khaki-light/50 hover:bg-khaki-light text-olive-wood text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <span>📄</span>
-            <span>Use Sample Resume (.docx)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleUploadSubmit}
-            disabled={!selectedFile || uploading}
-            className="px-6 py-3 rounded-2xl bg-sage hover:bg-sage-hover text-white text-xs font-extrabold shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ring-4 ring-sage/15"
-          >
-            {uploading ? (
-              <>
-                <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                <span>Processing Document...</span>
-              </>
-            ) : (
-              <span>Upload & Process Resume →</span>
-            )}
-          </button>
         </div>
       </div>
-    </div>
+    </ExecutiveLayout>
   );
 }

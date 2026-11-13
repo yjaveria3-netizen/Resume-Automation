@@ -1,27 +1,15 @@
 import React, { useState } from 'react';
 
 /**
- * ResumeActionBar Component
+ * ResumeActionBar Component - Executive Obsidian Dark Theme
  *
- * A sticky toolbar positioned above or alongside the resume preview containing:
- * - Primary 'Download .docx' / 'Download .pdf' button with format icon
- * - Format selector toggle (.docx / .pdf)
- * - 'Copy Link' button with copy feedback
- * - 'Re-generate' trigger button with loading spin feedback
- * - Last-updated timestamp status badge ('Generated 2m ago')
- * - Zoom & view scale toggles (75%, 100%, 125%, Fit)
- *
- * @param {Object} props
- * @param {string} [props.format="docx"] - Selected format ('docx' | 'pdf')
- * @param {Function} [props.onFormatChange] - Handler for format switch
- * @param {Function} [props.onDownload] - Handler for download action
- * @param {Function} [props.onRegenerate] - Handler for re-generation trigger
- * @param {Function} [props.onCopyLink] - Handler for copy link action
- * @param {boolean} [props.isGenerating=false] - Whether regeneration is in progress
- * @param {string} [props.lastUpdated="Generated 2m ago"] - Timestamp text
- * @param {number} [props.scale=100] - Document zoom percentage
- * @param {Function} [props.onScaleChange] - Handler for zoom scale change
- * @param {string} [props.className=""] - Extra Tailwind classes
+ * Sticky dark toolbar positioned above the resume preview containing:
+ * - Segmented format toggle (.docx / .pdf)
+ * - Last-updated timestamp & format meta
+ * - Zoom controls (- / +)
+ * - Re-generate button
+ * - Copy Link button
+ * - Single primary Download button
  */
 export default function ResumeActionBar({
   format = 'docx',
@@ -57,7 +45,6 @@ export default function ResumeActionBar({
     if (onDownload) {
       onDownload(format);
     } else {
-      // Native browser download without opening blank tabs
       const content = `Resume Auto-Updater Document Export (${format.toUpperCase()})\nGenerated at: ${new Date().toLocaleString()}`;
       const mimeType =
         format === 'docx'
@@ -80,107 +67,72 @@ export default function ResumeActionBar({
 
   return (
     <div
-      className={`sticky top-16 z-40 bg-white/95 backdrop-blur-md border border-khaki/40 rounded-2xl p-3 sm:p-4 shadow-sm transition-all ${className}`}
+      className={`sticky top-16 z-30 bg-[#12151C] border border-white/[0.06] rounded-xl p-2.5 sm:p-3 shadow-md transition-all ${className}`}
     >
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        {/* Left Side: Status Badge & Document Meta */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Format Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-khaki-light text-olive-wood text-xs font-semibold border border-khaki/50">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isDocx ? 'bg-blue-500' : 'bg-rose-500'
-              }`}
-            ></span>
-            <span>{isDocx ? 'Microsoft Word (.docx)' : 'Adobe PDF (.pdf)'}</span>
-          </div>
-
-          {/* Last Updated Timestamp Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sage/15 text-sage-hover text-xs font-medium border border-sage/30">
-            <svg
-              className="w-3.5 h-3.5 text-sage"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{lastUpdated}</span>
-          </div>
-
-          {/* US Letter Sheet Size Indicator */}
-          <span className="hidden sm:inline-flex items-center text-[11px] text-olive-wood/60 px-2 py-1 bg-khaki-light/50 rounded-md">
-            Letter 8.5" × 11"
-          </span>
-        </div>
-
-        {/* Right Side: Action Controls (Format Toggle, Re-generate, Copy, Download) */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          {/* Format Selector Toggle (.docx / .pdf) */}
-          <div className="inline-flex items-center p-1 rounded-xl bg-khaki-light border border-khaki/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        {/* Left Side: Segmented Format Selector & Document Meta */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Segmented Format Toggle (.docx / .pdf) */}
+          <div className="inline-flex items-center p-0.5 rounded-lg bg-[#0B0D12] border border-white/[0.06]">
             <button
               type="button"
               onClick={() => onFormatChange && onFormatChange('docx')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
                 isDocx
-                  ? 'bg-white text-olive-wood shadow-sm border border-khaki/40'
-                  : 'text-olive-wood/70 hover:text-olive-wood'
+                  ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                  : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
               }`}
               title="Switch to .docx format"
             >
-              <svg
-                className="w-3.5 h-3.5 text-blue-600"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
-              </svg>
-              .docx
+              <span className={`w-1.5 h-1.5 rounded-full ${isDocx ? 'bg-[#34D399]' : 'bg-[#6B7280]'}`} />
+              <span>.docx</span>
             </button>
             <button
               type="button"
               onClick={() => onFormatChange && onFormatChange('pdf')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
                 !isDocx
-                  ? 'bg-white text-olive-wood shadow-sm border border-khaki/40'
-                  : 'text-olive-wood/70 hover:text-olive-wood'
+                  ? 'bg-[#171B24] text-[#ECEEF2] shadow-xs'
+                  : 'text-[#9AA1AE] hover:text-[#ECEEF2]'
               }`}
               title="Switch to .pdf format"
             >
-              <svg
-                className="w-3.5 h-3.5 text-rose-600"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
-              </svg>
-              .pdf
+              <span className={`w-1.5 h-1.5 rounded-full ${!isDocx ? 'bg-[#F97316]' : 'bg-[#6B7280]'}`} />
+              <span>.pdf</span>
             </button>
           </div>
 
-          {/* Zoom / Scale Controls (Optional helpful utility) */}
+          {/* Last Updated Timestamp Badge */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#171B24] text-[#9AA1AE] text-xs font-medium border border-white/[0.06]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
+            <span>{lastUpdated}</span>
+          </div>
+
+          <span className="hidden md:inline-flex items-center text-[11px] text-[#6B7280] px-2 py-1 bg-[#0B0D12] rounded-md border border-white/[0.06]">
+            US Letter (8.5" × 11")
+          </span>
+        </div>
+
+        {/* Right Side: Action Controls (Zoom, Re-generate, Copy Link, Download) */}
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Zoom / Scale Controls */}
           {onScaleChange && (
-            <div className="hidden md:inline-flex items-center gap-1 p-1 rounded-xl bg-khaki-light/70 border border-khaki/40 text-xs text-olive-wood">
+            <div className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-[#0B0D12] border border-white/[0.06] text-xs">
               <button
                 type="button"
                 onClick={() => onScaleChange(Math.max(50, scale - 15))}
-                className="w-6 h-6 rounded flex items-center justify-center hover:bg-white transition-colors"
+                className="w-5 h-5 rounded flex items-center justify-center text-[#9AA1AE] hover:text-[#ECEEF2] hover:bg-[#171B24] transition-colors cursor-pointer"
                 title="Zoom Out"
               >
                 -
               </button>
-              <span className="px-1 text-[11px] font-medium min-w-[38px] text-center">
+              <span className="px-1 text-[11px] font-medium min-w-[32px] text-center text-[#9AA1AE]">
                 {scale}%
               </span>
               <button
                 type="button"
                 onClick={() => onScaleChange(Math.min(150, scale + 15))}
-                className="w-6 h-6 rounded flex items-center justify-center hover:bg-white transition-colors"
+                className="w-5 h-5 rounded flex items-center justify-center text-[#9AA1AE] hover:text-[#ECEEF2] hover:bg-[#171B24] transition-colors cursor-pointer"
                 title="Zoom In"
               >
                 +
@@ -188,18 +140,16 @@ export default function ResumeActionBar({
             </div>
           )}
 
-          {/* Re-generate Trigger Button */}
+          {/* Re-generate Button */}
           <button
             type="button"
             onClick={onRegenerate}
             disabled={isGenerating}
-            className="px-3 py-2 rounded-xl bg-khaki-light text-olive-wood hover:bg-khaki/30 text-xs font-semibold border border-khaki/50 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#171B24] hover:bg-[#202531] text-[#ECEEF2] text-xs font-medium border border-white/[0.06] transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             title="Re-generate resume with fresh GitHub commits"
           >
             <svg
-              className={`w-3.5 h-3.5 text-olive-wood ${
-                isGenerating ? 'animate-spin text-sage' : ''
-              }`}
+              className={`w-3.5 h-3.5 text-[#9AA1AE] ${isGenerating ? 'animate-spin' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -212,80 +162,55 @@ export default function ResumeActionBar({
               />
             </svg>
             <span className="hidden sm:inline">
-              {isGenerating ? 'Regenerating...' : 'Re-generate'}
+              {isGenerating ? 'Regenerating...' : 'Re-sync'}
             </span>
           </button>
 
-          {/* Copy Shareable Link Button with Animated Green 'Copied!' Tooltip */}
+          {/* Copy Shareable Link Button */}
           <div className="relative inline-block">
             {copied && (
-              <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-bold rounded-lg shadow-md flex items-center gap-1 animate-fade-in z-50 whitespace-nowrap">
-                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Copied!</span>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-emerald-600" />
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-[#34D399] text-[#0B0D12] text-[11px] font-semibold rounded shadow-sm z-50 whitespace-nowrap">
+                Copied!
               </div>
             )}
             <button
               type="button"
               onClick={handleCopy}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 cursor-pointer ${
                 copied
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                  : 'bg-khaki-light text-olive-wood hover:bg-khaki/30 border-khaki/50'
+                  ? 'bg-[#34D399]/10 text-[#34D399] border-[#34D399]/30'
+                  : 'bg-[#171B24] text-[#9AA1AE] hover:text-[#ECEEF2] hover:bg-[#202531] border-white/[0.06]'
               }`}
               title="Copy shareable resume link"
             >
-              {copied ? (
-                <>
-                  <svg
-                    className="w-3.5 h-3.5 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>Link Copied!</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-3.5 h-3.5 text-olive-wood"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="hidden sm:inline">Copy Link</span>
-                </>
-              )}
+              <svg
+                className="w-3.5 h-3.5 text-[#9AA1AE]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="hidden sm:inline">Copy Link</span>
             </button>
           </div>
 
-          {/* Primary Download Button */}
+          {/* Primary Download Button (Clean solid orange CTA) */}
           <button
             type="button"
             onClick={handleDownload}
             disabled={isDownloading}
-            className="px-4 py-2 rounded-xl bg-sage hover:bg-sage-hover text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-75 disabled:cursor-wait"
+            className="px-3.5 py-1.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-medium shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-75"
             title={`Download generated resume as ${isDocx ? '.docx' : '.pdf'}`}
           >
             {isDownloading ? (
               <svg
-                className="w-4 h-4 animate-spin text-white"
+                className="w-3.5 h-3.5 animate-spin text-white"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -305,7 +230,7 @@ export default function ResumeActionBar({
               </svg>
             ) : (
               <svg
-                className="w-4 h-4 text-white"
+                className="w-3.5 h-3.5 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -320,7 +245,7 @@ export default function ResumeActionBar({
             )}
             <span>
               {isDownloading
-                ? 'Preparing...'
+                ? 'Exporting...'
                 : isDocx
                 ? 'Download .docx'
                 : 'Download .pdf'}
