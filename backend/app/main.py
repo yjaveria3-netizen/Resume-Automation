@@ -4,7 +4,10 @@ import time
 import shutil
 import asyncio
 import logging
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 from datetime import datetime, timezone
 
 APP_START_TIME = time.time()
@@ -152,8 +155,11 @@ def health_check(db: Session = Depends(get_db)):
         pass
 
     try:
-        process = psutil.Process()
-        memory_mb = round(process.memory_info().rss / (1024 * 1024), 2)
+        if psutil:
+            process = psutil.Process()
+            memory_mb = round(process.memory_info().rss / (1024 * 1024), 2)
+        else:
+            memory_mb = 0.0
     except Exception:
         memory_mb = 0.0
 

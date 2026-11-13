@@ -1,34 +1,36 @@
-import axios from 'axios';
 import { getAuthHeader } from './auth';
 import { API_BASE_URL } from './config';
 
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
+const request = async (endpoint, options = {}) => {
+  const headers = {
     'Content-Type': 'application/json',
-  },
-});
+    ...getAuthHeader(),
+    ...(options.headers || {}),
+  };
 
-apiClient.interceptors.request.use((config) => {
-  const authHeaders = getAuthHeader();
-  if (authHeaders.Authorization) {
-    config.headers.Authorization = authHeaders.Authorization;
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    const message = errData.detail || `Request failed with status ${response.status}`;
+    throw new Error(message);
   }
-  return config;
-});
+
+  return await response.json();
+};
 
 /**
  * Fetch all pending bullet suggestions for the current user.
  */
 export const fetchPendingSuggestions = async () => {
   try {
-    const response = await apiClient.get('/suggestions');
-    return response.data;
+    return await request('/suggestions');
   } catch (error) {
-    const message = error.response?.data?.detail || error.message || 'Failed to fetch suggestions';
-    console.error('Error fetching pending suggestions:', message);
-    throw new Error(message);
+    console.error('Error fetching pending suggestions:', error.message);
+    throw error;
   }
 };
 
@@ -39,7 +41,10 @@ export const fetchPendingSuggestions = async () => {
 export const acceptSuggestion = async (id, customText = null, onResumeInvalidate = null) => {
   try {
     const payload = customText ? { custom_bullet: customText } : {};
-    const response = await apiClient.post(`/suggestions/${id}/accept`, payload);
+    const data = await request(`/suggestions/${id}/accept`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
     if (onResumeInvalidate && typeof onResumeInvalidate === 'function') {
       try {
         await onResumeInvalidate();
@@ -47,11 +52,10 @@ export const acceptSuggestion = async (id, customText = null, onResumeInvalidate
         console.warn('Resume cache invalidation callback failed:', invalErr);
       }
     }
-    return response.data;
+    return data;
   } catch (error) {
-    const message = error.response?.data?.detail || error.message || 'Failed to accept suggestion';
-    console.error('Error accepting suggestion:', message);
-    throw new Error(message);
+    console.error('Error accepting suggestion:', error.message);
+    throw error;
   }
 };
 
@@ -60,14 +64,13 @@ export const acceptSuggestion = async (id, customText = null, onResumeInvalidate
  */
 export const editSuggestion = async (id, text) => {
   try {
-    const response = await apiClient.put(`/suggestions/${id}`, {
-      proposed_bullet: text,
+    return await request(`/suggestions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ proposed_bullet: text }),
     });
-    return response.data;
   } catch (error) {
-    const message = error.response?.data?.detail || error.message || 'Failed to edit suggestion';
-    console.error('Error editing suggestion:', message);
-    throw new Error(message);
+    console.error('Error editing suggestion:', error.message);
+    throw error;
   }
 };
 
@@ -76,12 +79,12 @@ export const editSuggestion = async (id, text) => {
  */
 export const dismissSuggestion = async (id) => {
   try {
-    const response = await apiClient.post(`/suggestions/${id}/dismiss`);
-    return response.data;
+    return await request(`/suggestions/${id}/dismiss`, {
+      method: 'POST',
+    });
   } catch (error) {
-    const message = error.response?.data?.detail || error.message || 'Failed to dismiss suggestion';
-    console.error('Error dismissing suggestion:', message);
-    throw new Error(message);
+    console.error('Error dismissing suggestion:', error.message);
+    throw error;
   }
 };
 
@@ -91,8 +94,9 @@ export const dismissSuggestion = async (id) => {
  */
 export const swapProjectSuggestion = async (id, archiveProjectId, onResumeInvalidate = null) => {
   try {
-    const response = await apiClient.post(`/suggestions/${id}/swap`, {
-      archive_project_id: archiveProjectId,
+    const data = await request(`/suggestions/${id}/swap`, {
+      method: 'POST',
+      body: JSON.stringify({ archive_project_id: archiveProjectId }),
     });
     if (onResumeInvalidate && typeof onResumeInvalidate === 'function') {
       try {
@@ -101,11 +105,10 @@ export const swapProjectSuggestion = async (id, archiveProjectId, onResumeInvali
         console.warn('Resume cache invalidation callback failed:', invalErr);
       }
     }
-    return response.data;
+    return data;
   } catch (error) {
-    const message = error.response?.data?.detail || error.message || 'Failed to swap project';
-    console.error('Error swapping project suggestion:', message);
-    throw new Error(message);
+    console.error('Error swapping project suggestion:', error.message);
+    throw error;
   }
 };
 

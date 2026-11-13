@@ -107,6 +107,7 @@ flowchart LR
 
 ## Slide 8: Q&A & Thank You
 - **Demo Script:** [DEMO_SCRIPT.md]
-- **QA Report:** [QA_FINAL_REPORT.md]
+- **Master QA Checklist (Day 11 & 12):** [QA_CHECKLIST.md]
+- **QA Regression Report:** [QA_FINAL_REPORT.md]
 - **Security Audit:** [SECURITY_AUDIT_REPORT.md]
-- **Audience Q&A Lead:** Person B (MC)
+- **Audience Q&A Lead:** Person B (Frontend Support, QA & Demo MC)

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import VisualDiffModal from './VisualDiffModal';
 
 /**
  * SuggestionsQueueCard Component (Day 11 Review Queue)
@@ -21,6 +22,7 @@ export default function SuggestionsQueueCard({
   const [itemStates, setItemStates] = useState({});
   const [dismissingIds, setDismissingIds] = useState(new Set());
   const [processingIds, setProcessingIds] = useState(new Set());
+  const [diffModalItem, setDiffModalItem] = useState(null);
 
   if (!suggestions || suggestions.length === 0) {
     return null;
@@ -64,8 +66,8 @@ export default function SuggestionsQueueCard({
     }));
   };
 
-  const handleAcceptClick = async (suggestion) => {
-    const finalText = getItemText(suggestion);
+  const handleAcceptClick = async (suggestion, overrideText = null) => {
+    const finalText = overrideText !== null ? overrideText : getItemText(suggestion);
     setProcessingIds((prev) => new Set(prev).add(suggestion.id));
     try {
       if (onAccept) {
@@ -231,6 +233,21 @@ export default function SuggestionsQueueCard({
                   Dismiss
                 </button>
 
+                {/* Diff Preview Button */}
+                <button
+                  type="button"
+                  onClick={() => setDiffModalItem(suggestion)}
+                  disabled={isProcessing}
+                  className="px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50/70 hover:bg-emerald-100/80 text-emerald-800 text-xs font-bold transition-all shadow-2xs cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  title="Open GitHub-style visual diff modal"
+                >
+                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span>Preview Diff</span>
+                </button>
+
                 {/* Edit Toggle button */}
                 <button
                   type="button"
@@ -278,6 +295,20 @@ export default function SuggestionsQueueCard({
           );
         })}
       </div>
+
+      {/* Visual Diff Modal for detailed inspection before applying */}
+      {diffModalItem && (
+        <VisualDiffModal
+          isOpen={Boolean(diffModalItem)}
+          onClose={() => setDiffModalItem(null)}
+          onConfirm={async (id, customBullet) => {
+            await handleAcceptClick({ ...diffModalItem, id }, customBullet);
+            setDiffModalItem(null);
+          }}
+          suggestion={diffModalItem}
+          projectName={diffModalItem.repo_name}
+        />
+      )}
     </div>
   );
 }
