@@ -95,7 +95,7 @@ export default function ResumeDiffViewer({
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
-            <h3 className="font-semibold text-sm sm:text-base text-[#ECEEF2]">
+            <h3 className="font-semibold text-sm sm:text-base text-[#E0E0E0]">
               Resume Bullet Evolution & Commit Diff
             </h3>
             <span className="px-2 py-0.5 rounded-md bg-[#34D399]/10 text-[#34D399] border border-[#34D399]/20 text-[11px] font-medium">
