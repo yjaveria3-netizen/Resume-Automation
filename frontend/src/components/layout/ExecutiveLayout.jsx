@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getUser, logout } from '../../api/auth';
 
 /**
@@ -16,9 +16,76 @@ export default function ExecutiveLayout({
   actions = null,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = getUser();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const notificationRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setNotificationOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Keyboard shortcut ⌘K / Ctrl+K to focus search input
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Dispatch custom event and filter main page elements based on search query
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+    window.dispatchEvent(new CustomEvent('executive_search', { detail: { query } }));
+    applyDOMFilter(query);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    window.dispatchEvent(new CustomEvent('executive_search', { detail: { query: searchQuery } }));
+    applyDOMFilter(searchQuery);
+  };
+
+  const applyDOMFilter = (rawQuery) => {
+    const q = (rawQuery || '').trim().toLowerCase();
+    const mainEl = document.querySelector('main');
+    if (!mainEl) return;
+
+    // Reset all previous search filtering
+    const allFiltered = mainEl.querySelectorAll('[data-search-hidden]');
+    allFiltered.forEach((el) => {
+      el.removeAttribute('data-search-hidden');
+      el.style.display = '';
+    });
+
+    if (!q) return;
+
+    // Filter card containers or sections within main
+    const filterableCards = mainEl.querySelectorAll('.rounded-\\[16px\\], .rounded-xl, .rounded-lg, section');
+    filterableCards.forEach((card) => {
+      // Don't filter out modals or small child buttons
+      if (card.closest('.fixed') || card.closest('[role="dialog"]')) return;
+      const text = card.textContent?.toLowerCase() || '';
+      if (!text.includes(q)) {
+        card.setAttribute('data-search-hidden', 'true');
+        card.style.display = 'none';
+      }
+    });
+  };
 
   const handleLogout = () => {
     logout();
@@ -215,16 +282,17 @@ export default function ExecutiveLayout({
 
           {/* Center: Search input */}
           <div className="hidden md:flex items-center flex-1 max-w-sm mx-4">
-            <div className="relative w-full">
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#6B7280]">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </span>
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search..."
                 className="w-full pl-9 pr-10 py-1.5 rounded-[8px] border border-white/[0.06] bg-[#12151C] text-sm text-[#ECEEF2] placeholder-[#6B7280] focus:outline-none focus:border-white/[0.16] transition-colors"
               />
@@ -233,7 +301,7 @@ export default function ExecutiveLayout({
                   ⌘K
                 </kbd>
               </span>
-            </div>
+            </form>
           </div>
 
           {/* Right: Actions & Live Status Chip */}
@@ -244,16 +312,88 @@ export default function ExecutiveLayout({
               <span>GitHub connected</span>
             </div>
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              className="p-2 rounded-[8px] text-[#9AA1AE] hover:text-[#ECEEF2] hover:bg-white/[0.04] transition-colors"
-              title="Notifications"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
+            {/* Notification Bell Dropdown */}
+            <div className="relative" ref={notificationRef}>
+              <button
+                type="button"
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className={`p-2 rounded-[8px] transition-colors relative cursor-pointer ${
+                  notificationOpen
+                    ? 'text-[#ECEEF2] bg-white/[0.08]'
+                    : 'text-[#9AA1AE] hover:text-[#ECEEF2] hover:bg-white/[0.04]'
+                }`}
+                title="Notifications"
+                aria-expanded={notificationOpen}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {/* Notification indicator dot */}
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#F97316] ring-2 ring-[#0B0D12]" />
+              </button>
+
+              {/* Notification Dropdown Panel */}
+              {notificationOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-[#12151C] border border-white/[0.08] shadow-2xl py-2 z-50 animate-scale-in text-[#ECEEF2]">
+                  <div className="px-4 py-2 border-b border-white/[0.06] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-xs tracking-tight text-[#ECEEF2]">Notifications</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">
+                        3 New
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setNotificationOpen(false)}
+                      className="text-xs text-[#6B7280] hover:text-[#ECEEF2] transition-colors cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.04]">
+                    <div className="p-3 hover:bg-white/[0.02] transition-colors flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-[#34D399] shrink-0 mt-1.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[#ECEEF2]">GitHub Commit Synced</p>
+                        <p className="text-[11px] text-[#9AA1AE] mt-0.5 line-clamp-2">
+                          New commits detected from your connected repository. 1 new bullet proposed.
+                        </p>
+                        <span className="text-[10px] text-[#6B7280] font-mono mt-1 block">5 minutes ago</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 hover:bg-white/[0.02] transition-colors flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-[#F97316] shrink-0 mt-1.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[#ECEEF2]">Review Queue Pending</p>
+                        <p className="text-[11px] text-[#9AA1AE] mt-0.5 line-clamp-2">
+                          Review pending AI bullet suggestions in the Suggestions Queue before final export.
+                        </p>
+                        <span className="text-[10px] text-[#6B7280] font-mono mt-1 block">1 hour ago</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 hover:bg-white/[0.02] transition-colors flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-white/[0.3] shrink-0 mt-1.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[#ECEEF2]">1-Page Line Budget Safe</p>
+                        <p className="text-[11px] text-[#9AA1AE] mt-0.5 line-clamp-2">
+                          Resume layout strictly maintains single-page geometry with 0 overflow warnings.
+                        </p>
+                        <span className="text-[10px] text-[#6B7280] font-mono mt-1 block">Today</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-2 border-t border-white/[0.06] bg-[#0B0D12]/50 text-center">
+                    <span className="text-[11px] text-[#9AA1AE] hover:text-[#ECEEF2] transition-colors cursor-pointer">
+                      All systems synchronized
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Single Action Slot (e.g. Upload Master) */}
             {actions}
