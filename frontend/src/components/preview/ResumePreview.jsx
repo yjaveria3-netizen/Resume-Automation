@@ -127,7 +127,7 @@ export function ResumePreviewEmpty({ onUploadClick: _onUploadClick, onLoadSample
         </svg>
       </div>
 
-      <h3 className="text-base sm:text-lg font-semibold text-[#ECEEF2]">No Resume File Uploaded Yet</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-[#E0E0E0]">No Resume File Uploaded Yet</h3>
       <p className="text-[#9AA1AE] text-xs sm:text-sm max-w-md mt-1.5 mb-6 leading-relaxed">
         Upload your Microsoft Word (<span className="text-[#ECEEF2] font-medium">.docx</span>) resume to enable automatic GitHub commit bullet insertion and ATS score optimization.
       </p>
@@ -218,7 +218,7 @@ function ResumePreview({
           Actual Printable Document:
           Authentic white surface, crisp soft shadow, realistic document styling
         */}
-        <div 
+        <div
           className="w-full bg-white text-[#111827] rounded-lg shadow-xl border border-black/10 p-6 sm:p-10 md:p-12 space-y-5 select-text overflow-hidden"
           style={{ minHeight: '940px' }}
         >
@@ -290,7 +290,7 @@ function ResumePreview({
               <h2 className="text-[11px] font-bold uppercase tracking-wider text-[#111827] border-b border-black/10 pb-0.5">
                 Work Experience
               </h2>
-              
+
               <div className="space-y-3">
                 {resume.experience.map((exp, idx) => (
                   <div key={idx} className="space-y-0.5">
